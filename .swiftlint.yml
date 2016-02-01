@@ -1,0 +1,38 @@
+disabled_rules:
+  - trailing_whitespace
+  - missing_docs
+  - variable_name
+  - line_length
+  - valid_docs
+enabled_rules:
+  - empty_count
+  - trailing_newline
+  - opening_brace
+  - empty_count
+  - comma
+  - colon
+  - force_cast
+  - type_name
+  - trailing_semicolon
+  - force_try
+  - function_body_length
+  - nesting
+  - conditional_binding_cascade
+  - operator_whitespace
+  - control_statement
+  - legacy_constant
+  - return_arrow_whitespace
+  - trailing_whitespace
+  - closing_brace
+  - statement_position
+  - type_body_length
+  - todo
+  - legacy_constructor
+  - cyclomatic_complexity
+  - file_length
+  - leading_whitespace
+included:
+  - Alfredo
+file_length:
+  warning: 1000
+  error: 1500
