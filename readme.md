@@ -16,7 +16,7 @@ pod 'Obsidian-UI-iOS'
 
 ## Documentation
 
-
+See the [documentation](http://cocoadocs.org/docsets/Obsidian-UI-iOS) at CocoaDocs.
 
 ## Getting Help
 
