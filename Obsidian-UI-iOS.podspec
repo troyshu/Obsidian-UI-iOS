@@ -5,7 +5,8 @@ Pod::Spec.new do |s|
   s.summary          = "A collection of useful iOS user interface components and utilities for use in a wide range of projects."
 
   s.description      = "Obsidian UI is a collection of useful iOS user interface components and utilities for use in a wide range of projects.  For convenience, the classes have been bundled into one framework, ready to be dropped into your app."
-  s.homepage         = "http://tendigi.github.io/obsidian-ui-ios"
+  
+  s.homepage         = "http://tendigi.com"
 
   s.license          = 'MIT'
   s.author           = { "Nick Lee" => "nick@tendigi.com" }
