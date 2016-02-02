@@ -31,8 +31,6 @@ enabled_rules:
   - cyclomatic_complexity
   - file_length
   - leading_whitespace
-included:
-  - Alfredo
 file_length:
   warning: 1000
   error: 1500
