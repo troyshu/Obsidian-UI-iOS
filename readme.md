@@ -14,6 +14,12 @@ Add the following to your `Podfile`:
 pod 'Obsidian-UI-iOS'
 ```
 
+Then add the following to import:
+
+```
+import Obsidian_UI_iOS 
+```
+
 ## Documentation
 
 See the [documentation](http://cocoadocs.org/docsets/Obsidian-UI-iOS) at CocoaDocs.
