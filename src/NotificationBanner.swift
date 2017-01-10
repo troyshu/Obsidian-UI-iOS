@@ -12,19 +12,19 @@ import Foundation
 public protocol NotificationBannerDelegate {
 
     /// Called when the banner is tapped
-    func bannerTapped(banner: NotificationBanner)
+    func bannerTapped(_ banner: NotificationBanner)
 
     /// Called when the banner begins to animage-in
-    func willBeginDisplayingBanner(banner: NotificationBanner)
+    func willBeginDisplayingBanner(_ banner: NotificationBanner)
 
     /// Called when the banner is done animating-in
-    func didDisplayBanner(banner: NotificationBanner)
+    func didDisplayBanner(_ banner: NotificationBanner)
 
     /// Called when the banner begins to animate-out
-    func willEndDisplayingBanner(banner: NotificationBanner)
+    func willEndDisplayingBanner(_ banner: NotificationBanner)
 
     /// Called when the banner has fully animated-out
-    func didEndDisplayingBanner(banner: NotificationBanner)
+    func didEndDisplayingBanner(_ banner: NotificationBanner)
 }
 
 /**
@@ -37,12 +37,12 @@ that you present this in a UINavigationController that contains the table view.
 Then set the top contentInset of the table to fit the height of the banner.
 
 */
-public class NotificationBanner: FloatingView {
+open class NotificationBanner: FloatingView {
 
     // MARK: Public Properties
 
     /// The text of the banner.
-    public var text: String? {
+    open var text: String? {
         get {
             return label.text
         }
@@ -52,7 +52,7 @@ public class NotificationBanner: FloatingView {
     }
 
     /// The font of the text.
-    public var font: UIFont {
+    open var font: UIFont {
         get {
             return label.font
         }
@@ -62,7 +62,7 @@ public class NotificationBanner: FloatingView {
     }
 
     /// The color of the text.
-    public var textColor: UIColor {
+    open var textColor: UIColor {
         get {
             return label.textColor
         }
@@ -72,21 +72,21 @@ public class NotificationBanner: FloatingView {
     }
 
     /// The duration of the move in and out animation
-    public var animationDuration = 0.4
+    open var animationDuration = 0.4
 
     /// The delegate responds to taps on the banner.
-    public var delegate: NotificationBannerDelegate?
+    open var delegate: NotificationBannerDelegate?
 
     /// The time that the banner is fully in view. Default is 3 seconds.
-    public var displayTime = 3.0
+    open var displayTime = 3.0
 
     // MARK: Private Properties
-    private var label = UILabel()
+    fileprivate var label = UILabel()
 
     // MARK: Initialization
 
     /// :nodoc:
-    public init(message: String, color: UIColor = UIColor.darkGrayColor(), textColor: UIColor = UIColor.whiteColor(), height: CGFloat = 35, duration: Double = 3.0) {
+    public init(message: String, color: UIColor = UIColor.darkGray, textColor: UIColor = UIColor.white, height: CGFloat = 35, duration: Double = 3.0) {
         super.init(frame: CGRect.zero)
         commonInit()
         configureBanner(color: color, textColor: textColor, message: message, duration: duration, height: height)
@@ -110,12 +110,12 @@ public class NotificationBanner: FloatingView {
         commonInit()
     }
 
-    private func commonInit() {
-        let tapRecognizer = UITapGestureRecognizer(target: self, action: "handleTap")
+    fileprivate func commonInit() {
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(NotificationBanner.handleTap))
         addGestureRecognizer(tapRecognizer)
 
         addSubview(label)
-        label.textAlignment = NSTextAlignment.Center
+        label.textAlignment = NSTextAlignment.center
     }
 
     // MARK: Presentation
@@ -126,13 +126,13 @@ public class NotificationBanner: FloatingView {
     - parameter navigationController: The navigationController to present into.
 
     */
-    public func presentInNavigationController(navigationController: UINavigationController) {
+    open func presentInNavigationController(_ navigationController: UINavigationController) {
         let view = navigationController.view
         let topBarHeight = navigationController.navigationBar.frame.height
-        frame = CGRect(0, -topBarHeight, view.width, height)
-        view.insertSubview(self, belowSubview: navigationController.navigationBar)
+        frame = CGRect(0, -topBarHeight, (view?.width)!, height)
+        view?.insertSubview(self, belowSubview: navigationController.navigationBar)
 
-        show(topOfView: UIApplication.sharedApplication().statusBarFrame.height + navigationController.navigationBar.frame.height, width: view.width, height: height + topBarHeight)
+        show(topOfView: UIApplication.shared.statusBarFrame.height + navigationController.navigationBar.frame.height, width: (view?.width)!, height: height + topBarHeight)
     }
 
     /**
@@ -142,12 +142,12 @@ public class NotificationBanner: FloatingView {
     - parameter originY: The Y compontent of the origin of the presented banner.
 
     */
-    public func presentInNavigationController(navigationController: UINavigationController, originY: CGFloat) {
+    open func presentInNavigationController(_ navigationController: UINavigationController, originY: CGFloat) {
         let view = navigationController.view
-        frame = CGRect(0, -originY, view.width, height)
-        view.insertSubview(self, belowSubview: navigationController.navigationBar)
+        frame = CGRect(0, -originY, (view?.width)!, height)
+        view?.insertSubview(self, belowSubview: navigationController.navigationBar)
 
-        show(topOfView: originY, width: view.width, height: height + originY)
+        show(topOfView: originY, width: (view?.width)!, height: height + originY)
     }
 
     /**
@@ -156,14 +156,14 @@ public class NotificationBanner: FloatingView {
     - parameter view: The view to present into.
 
     */
-    public func presentInView(view: UIView) {
+    open func presentInView(_ view: UIView) {
         frame = CGRect(0, -height, view.width, height)
         view.addSubview(self)
 
         show(topOfView: 0, width: view.width, height: height)
     }
 
-    private func configureBanner(color color: UIColor = UIColor.darkGrayColor(), textColor: UIColor = UIColor.whiteColor(), message: String, duration: Double = 3.0, height: CGFloat = 35) {
+    fileprivate func configureBanner(color: UIColor = UIColor.darkGray, textColor: UIColor = UIColor.white, message: String, duration: Double = 3.0, height: CGFloat = 35) {
         text = message
         backgroundColor = color
         self.textColor = textColor
@@ -171,18 +171,18 @@ public class NotificationBanner: FloatingView {
         frame.size.height = height
     }
 
-    private func show(topOfView originY: CGFloat, width: CGFloat, height: CGFloat) {
+    fileprivate func show(topOfView originY: CGFloat, width: CGFloat, height: CGFloat) {
         label.frame = bounds
 
         var visibleFrame = frame
         visibleFrame.origin.y = 0 + originY
 
         delegate?.willBeginDisplayingBanner(self)
-        UIView.animateWithDuration(animationDuration, animations: { () -> Void in
+        UIView.animate(withDuration: animationDuration, animations: { () -> Void in
             self.frame = visibleFrame
-            }) { (finished) -> Void in
-                let _ = NSTimer.scheduledTimerWithTimeInterval(3, target: self, selector: "animateOutBanner", userInfo: nil, repeats: false)
-        }
+            }, completion: { (finished) -> Void in
+                let _ = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(NotificationBanner.animateOutBanner), userInfo: nil, repeats: false)
+        }) 
     }
 
     func animateOutBanner() {
@@ -191,7 +191,7 @@ public class NotificationBanner: FloatingView {
         var hiddenFrame = frame
         hiddenFrame.origin.y = -(frame.height + 100)
 
-        UIView.animateWithDuration(self.animationDuration, delay: 0, options: UIViewAnimationOptions.TransitionNone, animations: { () -> Void in
+        UIView.animate(withDuration: self.animationDuration, delay: 0, options: UIViewAnimationOptions(), animations: { () -> Void in
             self.frame = hiddenFrame
             }, completion: { (finished) -> Void in
                 self.delegate?.didEndDisplayingBanner(self)

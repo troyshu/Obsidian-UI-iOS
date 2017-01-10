@@ -9,7 +9,7 @@
 import Foundation
 import QuartzCore
 
-public class CharacterLabel: UILabel, NSLayoutManagerDelegate {
+open class CharacterLabel: UILabel, NSLayoutManagerDelegate {
 
     var oldCharacterTextLayers = [CATextLayer]()
     var newCharacterTextLayers = [CATextLayer]()
@@ -18,7 +18,7 @@ public class CharacterLabel: UILabel, NSLayoutManagerDelegate {
     let layoutManager = NSLayoutManager()
     var characterTextLayers = [CATextLayer]()
 
-    override public var lineBreakMode: NSLineBreakMode {
+    override open var lineBreakMode: NSLineBreakMode {
         get {
             return super.lineBreakMode
         }
@@ -30,7 +30,7 @@ public class CharacterLabel: UILabel, NSLayoutManagerDelegate {
 
     }
 
-    override public var numberOfLines: Int {
+    override open var numberOfLines: Int {
         get {
             return super.numberOfLines
         }
@@ -42,7 +42,7 @@ public class CharacterLabel: UILabel, NSLayoutManagerDelegate {
 
     }
 
-    override public var bounds: CGRect {
+    override open var bounds: CGRect {
         get {
             return super.bounds
         }
@@ -54,7 +54,7 @@ public class CharacterLabel: UILabel, NSLayoutManagerDelegate {
 
     }
 
-    override public var text: String! {
+    override open var text: String! {
         get {
             return super.text
         }
@@ -72,7 +72,7 @@ public class CharacterLabel: UILabel, NSLayoutManagerDelegate {
         }
     }
 
-    override public var attributedText: NSAttributedString! {
+    override open var attributedText: NSAttributedString! {
         get {
             return super.attributedText
         }
@@ -97,7 +97,7 @@ public class CharacterLabel: UILabel, NSLayoutManagerDelegate {
         setupLayoutManager()
     }
 
-    override public func awakeFromNib() {
+    override open func awakeFromNib() {
         super.awakeFromNib()
         setupLayoutManager()
     }
@@ -113,57 +113,57 @@ public class CharacterLabel: UILabel, NSLayoutManagerDelegate {
         }
     }
 
-    public func layoutManager(layoutManager: NSLayoutManager, didCompleteLayoutForTextContainer textContainer: NSTextContainer?, atEnd layoutFinishedFlag: Bool) {
+    open func layoutManager(_ layoutManager: NSLayoutManager, didCompleteLayoutFor textContainer: NSTextContainer?, atEnd layoutFinishedFlag: Bool) {
         calculateTextLayers()
     }
 
     func calculateTextLayers() {
-        characterTextLayers.removeAll(keepCapacity: false)
+        characterTextLayers.removeAll(keepingCapacity: false)
         let attributedText = textStorage.string
 
         let wordRange = NSRange(location: 0, length: attributedText.characters.count)
         let attributedString = self.internalAttributedText()
-        let layoutRect = layoutManager.usedRectForTextContainer(textContainer)
+        let layoutRect = layoutManager.usedRect(for: textContainer)
 
-        for var index = wordRange.location; index < wordRange.length+wordRange.location; index += 0 {
-            let glyphRange = NSRange(location: index, length: 1)
-            let characterRange = layoutManager.characterRangeForGlyphRange(glyphRange, actualGlyphRange:nil)
-            let textContainer = layoutManager.textContainerForGlyphAtIndex(index, effectiveRange: nil)
-            var glyphRect = layoutManager.boundingRectForGlyphRange(glyphRange, inTextContainer: textContainer!)
-            let location = layoutManager.locationForGlyphAtIndex(index)
-            let kerningRange = layoutManager.rangeOfNominallySpacedGlyphsContainingIndex(index)
-
-            if kerningRange.length > 1 && kerningRange.location == index {
-                if !characterTextLayers.isEmpty {
-                    let previousLayer = characterTextLayers[characterTextLayers.endIndex-1]
-                    var frame = previousLayer.frame
-                    frame.size.width += CGRectGetMaxX(glyphRect)-CGRectGetMaxX(frame)
-                    previousLayer.frame = frame
-                }
-            }
-
-
-            glyphRect.origin.y += location.y-(glyphRect.height/2)+(self.bounds.size.height/2)-(layoutRect.size.height/2)
-
-
-            let textLayer = CATextLayer(frame: glyphRect, string: attributedString.attributedSubstringFromRange(characterRange))
-            initialTextLayerAttributes(textLayer)
-
-            layer.addSublayer(textLayer)
-            characterTextLayers.append(textLayer)
-
-            index += characterRange.length
-        }
+//        for var index = wordRange.location; index < wordRange.length+wordRange.location; index += 0 {
+//            let glyphRange = NSRange(location: index, length: 1)
+//            let characterRange = layoutManager.characterRange(forGlyphRange: glyphRange, actualGlyphRange:nil)
+//            let textContainer = layoutManager.textContainer(forGlyphAt: index, effectiveRange: nil)
+//            var glyphRect = layoutManager.boundingRect(forGlyphRange: glyphRange, in: textContainer!)
+//            let location = layoutManager.location(forGlyphAt: index)
+//            let kerningRange = layoutManager.range(ofNominallySpacedGlyphsContaining: index)
+//
+//            if kerningRange.length > 1 && kerningRange.location == index {
+//                if !characterTextLayers.isEmpty {
+//                    let previousLayer = characterTextLayers[characterTextLayers.endIndex-1]
+//                    var frame = previousLayer.frame
+//                    frame.size.width += glyphRect.maxX-frame.maxX
+//                    previousLayer.frame = frame
+//                }
+//            }
+//
+//
+//            glyphRect.origin.y += location.y-(glyphRect.height/2)+(self.bounds.size.height/2)-(layoutRect.size.height/2)
+//
+//
+//            let textLayer = CATextLayer(frame: glyphRect, string: (attributedString?.attributedSubstring(from: characterRange))!)
+//            initialTextLayerAttributes(textLayer)
+//
+//            layer.addSublayer(textLayer)
+//            characterTextLayers.append(textLayer)
+//
+//            index += characterRange.length
+//        }
     }
 
-    func initialTextLayerAttributes(textLayer: CATextLayer) {
+    func initialTextLayerAttributes(_ textLayer: CATextLayer) {
 
     }
 
     func internalAttributedText() -> NSMutableAttributedString! {
         let wordRange = NSRange(location: 0, length: textStorage.string.characters.count)
         let attributedText = NSMutableAttributedString(string: textStorage.string)
-        attributedText.addAttribute(NSForegroundColorAttributeName, value: self.textColor.CGColor, range:wordRange)
+        attributedText.addAttribute(NSForegroundColorAttributeName, value: self.textColor.cgColor, range:wordRange)
         attributedText.addAttribute(NSFontAttributeName, value: self.font, range:wordRange)
 
         let paragraphStyle = NSMutableParagraphStyle()
@@ -179,7 +179,7 @@ public class CharacterLabel: UILabel, NSLayoutManagerDelegate {
             textLayer.removeFromSuperlayer()
         }
         //clean out the text layer
-        oldCharacterTextLayers.removeAll(keepCapacity: false)
+        oldCharacterTextLayers.removeAll(keepingCapacity: false)
     }
 
 }

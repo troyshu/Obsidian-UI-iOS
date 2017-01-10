@@ -17,27 +17,27 @@ regardless of its superview's scrolling or it can stick to the top (FloatAboveCo
 bottom (FloatBelowContent) of the superview until the content is scrolled and pushes it out of view.
 
 */
-public class FloatingView: UIView {
+open class FloatingView: UIView {
 
     /// How the view behaves when its superview is scrolled
     public enum FloatBehavior {
         /// View will stay above content and move out of view when scrolled.
-        case FloatAboveContent
+        case floatAboveContent
         /// View will stay below content and move out of view when scrolled.
-        case FloatBelowContent
+        case floatBelowContent
         /// View will always be visible at top of view and not effected by scrolling.
-        case FloatAtTop
+        case floatAtTop
         /// View will always be visible at bottom of view and not effected by scrolling.
-        case FloatAtBottom
+        case floatAtBottom
         /// View will stay in its visible position.
-        case FloatInPlace
+        case floatInPlace
     }
 
     /// How the view behaves when its superview is scrolled
-    public var floatBehavior = FloatBehavior.FloatAtTop
+    open var floatBehavior = FloatBehavior.floatAtTop
 
     /// Call this inside the scrollViewDidScroll of your UIScrollViewDelegate or UITableViewDelegate.
-    public func scrollViewDidScroll(scrollView: UIScrollView) {
+    open func scrollViewDidScroll(_ scrollView: UIScrollView) {
 
         let verticalScrollDistance = scrollView.contentOffset.y
         let topContentInset = scrollView.contentInset.top
@@ -47,23 +47,23 @@ public class FloatingView: UIView {
         let contentHeight = scrollView.contentSize.height
 
         switch floatBehavior {
-        case .FloatAboveContent:
+        case .floatAboveContent:
             if verticalScrollDistance <= -topContentInset {
                 newFrameOriginY = verticalScrollDistance + restingScrollPosition
             }
             break
-        case .FloatBelowContent:
+        case .floatBelowContent:
             if verticalScrollDistance > (contentHeight + newFrame.height - scrollView.height) {
                 newFrameOriginY = scrollView.height - newFrame.height + verticalScrollDistance
             }
             break
-        case .FloatAtTop:
+        case .floatAtTop:
             newFrameOriginY = verticalScrollDistance
             break
-        case .FloatAtBottom:
+        case .floatAtBottom:
             newFrameOriginY = verticalScrollDistance + scrollView.height - newFrame.height
             break
-        case .FloatInPlace:
+        case .floatInPlace:
             newFrameOriginY += verticalScrollDistance
             break
         }

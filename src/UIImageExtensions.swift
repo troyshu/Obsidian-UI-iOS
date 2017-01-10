@@ -17,7 +17,7 @@ public extension UIImage {
         let bounds = CGRect(origin: CGPoint.zero, size: size)
         let view = UIImageView(frame: bounds)
         view.image = self
-        view.contentMode = .Center
+        view.contentMode = .center
         return view
     }
 
@@ -29,21 +29,21 @@ internal extension UIImage {
         return decodedImage(scale: scale)
     }
 
-    internal func decodedImage(scale scale: CGFloat) -> UIImage? {
+    internal func decodedImage(scale: CGFloat) -> UIImage? {
 
-        let imageRef = CGImage
+        let imageRef = cgImage
 
         let colorSpace = CGColorSpaceCreateDeviceRGB()
-        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.PremultipliedLast.rawValue)
+        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)
 
-        let context = CGBitmapContextCreate(nil, CGImageGetWidth(imageRef), CGImageGetHeight(imageRef), 8, 0, colorSpace, bitmapInfo.rawValue)
+        let context = CGContext(data: nil, width: (imageRef?.width)!, height: (imageRef?.height)!, bitsPerComponent: 8, bytesPerRow: 0, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
 
         if let context = context {
-            let rect = CGRect(0, 0, CGFloat(CGImageGetWidth(imageRef)), CGFloat(CGImageGetHeight(imageRef)))
-            CGContextDrawImage(context, rect, imageRef)
-            let decompressedImageRef = CGBitmapContextCreateImage(context)
+            let rect = CGRect(0, 0, CGFloat((imageRef?.width)!), CGFloat((imageRef?.height)!))
+            context.draw(imageRef!, in: rect)
+            let decompressedImageRef = context.makeImage()
             if let decompressed = decompressedImageRef {
-                return UIImage(CGImage: decompressed, scale: scale, orientation: imageOrientation)
+                return UIImage(cgImage: decompressed, scale: scale, orientation: imageOrientation)
             }
         }
 

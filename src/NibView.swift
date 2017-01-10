@@ -8,15 +8,15 @@
 
 import Foundation
 
-public class NibView: UIView {
+open class NibView: UIView {
 
     // MARK: Properties
 
     // The view that was loaded in
-    public private(set) var contentView: UIView!
+    open fileprivate(set) var contentView: UIView!
 
     // The name of the nib that should be loaded
-    public var nibName: String {
+    open var nibName: String {
         fatalError("must override nibName var in all NibView subclasses")
     }
 
@@ -32,14 +32,14 @@ public class NibView: UIView {
         commonInit()
     }
 
-    private func commonInit() {
+    fileprivate func commonInit() {
         loadNib(nibName)
     }
 
     // MARK: Nib Loading
 
-    private func loadNib(name: String) {
-        guard let loadedView = NSBundle.mainBundle().loadNibNamed(name, owner: self, options: nil)?.first as? UIView else {
+    fileprivate func loadNib(_ name: String) {
+        guard let loadedView = Bundle.main.loadNibNamed(name, owner: self, options: nil)?.first as? UIView else {
             fatalError("Failed to load nib named: \(name)")
         }
         loadedView.translatesAutoresizingMaskIntoConstraints = false
@@ -49,19 +49,19 @@ public class NibView: UIView {
         configure()
     }
 
-    private func constrain() {
+    fileprivate func constrain() {
         let constraints = [
-            NSLayoutConstraint(item: contentView, attribute: .Top, relatedBy: .Equal, toItem: self, attribute: .Top, multiplier: 1.0, constant: 0.0),
-            NSLayoutConstraint(item: contentView, attribute: .Bottom, relatedBy: .Equal, toItem: self, attribute: .Bottom, multiplier: 1.0, constant: 0.0),
-            NSLayoutConstraint(item: contentView, attribute: .Left, relatedBy: .Equal, toItem: self, attribute: .Left, multiplier: 1.0, constant: 0.0),
-            NSLayoutConstraint(item: contentView, attribute: .Right, relatedBy: .Equal, toItem: self, attribute: .Right, multiplier: 1.0, constant: 0.0)
+            NSLayoutConstraint(item: contentView, attribute: .top, relatedBy: .equal, toItem: self, attribute: .top, multiplier: 1.0, constant: 0.0),
+            NSLayoutConstraint(item: contentView, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1.0, constant: 0.0),
+            NSLayoutConstraint(item: contentView, attribute: .left, relatedBy: .equal, toItem: self, attribute: .left, multiplier: 1.0, constant: 0.0),
+            NSLayoutConstraint(item: contentView, attribute: .right, relatedBy: .equal, toItem: self, attribute: .right, multiplier: 1.0, constant: 0.0)
         ]
-        constraints.forEach { $0.active = true }
+        constraints.forEach { $0.isActive = true }
     }
 
     // MARK: Configuration
 
     /// Called when the content view is loaded
-    public func configure() {}
+    open func configure() {}
 
 }

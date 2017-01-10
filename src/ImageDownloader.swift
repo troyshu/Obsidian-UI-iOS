@@ -14,24 +14,24 @@ public final class ImageDownloader {
     // MARK: Public Properties
 
     /// A definition of the closure called when an image download operation completes
-    public typealias Completion = (image: UIImage?, error: NSError?) -> ()
+    public typealias Completion = (_ image: UIImage?, _ error: Error?) -> ()
 
     /// The shared ImageDownloader
     public static let sharedInstance = ImageDownloader()
 
     // MARK: Private Properties
 
-    private let session: NSURLSession = {
-        let config = NSURLSessionConfiguration.defaultSessionConfiguration()
-        let session = NSURLSession(configuration: config)
+    fileprivate let session: URLSession = {
+        let config = URLSessionConfiguration.default
+        let session = URLSession(configuration: config)
         return session
         }()
 
-    private let cache = MemoryCache<NSURL, UIImage>(identifier: Constants.ImageCacheName)
+    fileprivate let cache = MemoryCache<URL, UIImage>(identifier: Constants.ImageCacheName)
 
     // MARK: Initialization
 
-    private init() {
+    fileprivate init() {
 
     }
 
@@ -46,29 +46,29 @@ public final class ImageDownloader {
     - returns: An ImageDownloadTask that can be used to cancel the download operation
 
     */
-    public func download(url: NSURL, completion: Completion?) -> ImageDownloadTask? {
+    public func download(_ url: URL, completion: Completion?) -> ImageDownloadTask? {
 
 
         if let image = self.cache[url] {
             MainQueue.async {
-                completion?(image: image, error: nil)
+                completion?(image, nil)
             }
             return nil
         }
 
-        let request = NSURLRequest(URL: url)
+        let request = URLRequest(url: url)
 
-        let task = session.dataTaskWithRequest(request, completionHandler: { (data, response, error) -> Void in
+        let task = session.dataTask(with: request, completionHandler: { (data, response, error) -> Void in
             if let e = error {
                 MainQueue.async {
-                    completion?(image: nil, error: e)
+                    completion?(nil, e)
                 }
             } else if data != nil {
                 let theData = data!
                 let image = UIImage(data: theData)?.decodedImage()
                 self.cache[url] = image
                 MainQueue.async {
-                    completion?(image: image, error: nil)
+                    completion?(image, nil)
                 }
             }
         })
@@ -83,7 +83,7 @@ public final class ImageDownloader {
 
 public struct ImageDownloadTask {
 
-    private let task: NSURLSessionDataTask
+    fileprivate let task: URLSessionDataTask
 
     /// Cancels the task
     public func cancel() {

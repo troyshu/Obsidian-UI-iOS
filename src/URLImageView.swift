@@ -9,7 +9,7 @@
 import Foundation
 
 protocol URLImageViewDelegate {
-    func loadedImage(image image: UIImage?, error: NSError?)
+    func loadedImage(image: UIImage?, error: Error?)
 }
 
 public final class URLImageView: UIImageView {
@@ -17,7 +17,7 @@ public final class URLImageView: UIImageView {
     // MARK: Properties
 
     /// The URL of the image displayed in the view
-    public var imageURL: NSURL? {
+    public var imageURL: URL? {
         didSet {
             if imageURL == nil {
                 cancelImageLoad()
@@ -32,8 +32,8 @@ public final class URLImageView: UIImageView {
 
     // MARK: Private Properties
 
-    private var task: ImageDownloadTask?
-    private var cancelled = false
+    fileprivate var task: ImageDownloadTask?
+    fileprivate var cancelled = false
 
     // MARK: Initialization
 
@@ -54,7 +54,7 @@ public final class URLImageView: UIImageView {
 
     // MARK: Managing image requests
 
-    private func loadImage() {
+    fileprivate func loadImage() {
 
         cancelImageLoad()
 
@@ -63,7 +63,7 @@ public final class URLImageView: UIImageView {
         if let url = imageURL {
             task = ImageDownloader.sharedInstance.download(url, completion: { [weak self] (image, error) -> () in
 
-                if let cancelled = self?.cancelled where !cancelled {
+                if let cancelled = self?.cancelled, !cancelled {
                     self?.image = image
                     self?.delegate?.loadedImage(image: image, error: error)
                 }

@@ -19,10 +19,10 @@ import UIKit
  */
 public protocol InputTextFieldValidityDelegate: class {
     /// When the text becomes valid
-    func inputDidBecomeValid(field: InputTextField)
+    func inputDidBecomeValid(_ field: InputTextField)
 
     /// Called when the text becomes invalid
-    func inputDidBecomeInvalid(field: InputTextField)
+    func inputDidBecomeInvalid(_ field: InputTextField)
 }
 
 /**
@@ -35,7 +35,7 @@ public protocol InputTextFieldValidityDelegate: class {
  selected text will not get copied to the clipboard.
 
  */
-public class InputTextField: UITextField, UITextFieldDelegate {
+open class InputTextField: UITextField, UITextFieldDelegate {
 
     /**
      An InputFormatter will setup the validityChecker and inputFormatter
@@ -43,7 +43,7 @@ public class InputTextField: UITextField, UITextFieldDelegate {
      InputFormatter.
 
      */
-    private var formatter: InputFormatter? {
+    fileprivate var formatter: InputFormatter? {
         didSet {
             if let inputFormatter = formatter {
                 if let formatifier = inputFormatter.textFormatter {
@@ -58,7 +58,7 @@ public class InputTextField: UITextField, UITextFieldDelegate {
     }
 
     /// This will setup the validityChecker and inputFormatter.
-    public var formattingType: InputFormattingType? {
+    open var formattingType: InputFormattingType? {
         get {
             return formatter?.formattingType
         }
@@ -69,7 +69,7 @@ public class InputTextField: UITextField, UITextFieldDelegate {
         }
     }
 
-    private var valid = false
+    fileprivate var valid = false
 
     // MARK: Initialization
 
@@ -89,12 +89,12 @@ public class InputTextField: UITextField, UITextFieldDelegate {
         commonInit()
     }
 
-    private func commonInit() {
+    fileprivate func commonInit() {
         delegate = self
     }
 
     /// The validityDelegate responds to changes in the validity of the field's text.
-    public var validityDelegate: InputTextFieldValidityDelegate?
+    open var validityDelegate: InputTextFieldValidityDelegate?
 
     // MARK: Validity
 
@@ -109,7 +109,7 @@ public class InputTextField: UITextField, UITextFieldDelegate {
     - returns: the validity of the input
 
     */
-    public var validityChecker: ((input: String) -> Bool)?
+    open var validityChecker: ((_ input: String) -> Bool)?
 
     /**
      Called to check the validity of the field's text
@@ -118,7 +118,7 @@ public class InputTextField: UITextField, UITextFieldDelegate {
      field is valid or not.
 
      */
-    public func setValidChecker(checker: ((input: String) -> Bool)?) {
+    open func setValidChecker(_ checker: ((_ input: String) -> Bool)?) {
         validityChecker = checker
     }
 
@@ -129,9 +129,9 @@ public class InputTextField: UITextField, UITextFieldDelegate {
      - returns: Whether the text is valid. Determined by the validityChecker.
 
      */
-    public func checkValidity() -> Bool {
+    open func checkValidity() -> Bool {
         if let checker = validityChecker {
-            return checker(input: text ?? "")
+            return checker(text ?? "")
         } else {
             return false
         }
@@ -147,7 +147,7 @@ public class InputTextField: UITextField, UITextFieldDelegate {
     - returns: this will be set as the field's text
 
     */
-    public var inputTextFormatter: ((text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int))?
+    open var inputTextFormatter: ((_ text: String, _ newInput: String, _ range: NSRange, _ cursorPosition: Int) -> (String, Int))?
 
     /**
      Called each time the text field's input is modified. Meant for chaning the format
@@ -156,7 +156,7 @@ public class InputTextField: UITextField, UITextFieldDelegate {
      - parameter formatter: function that returns text that will become the field's text.
 
      */
-    public func setInputFormatter(formatter: ((text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int))?) {
+    open func setInputFormatter(_ formatter: ((_ text: String, _ newInput: String, _ range: NSRange, _ cursorPosition: Int) -> (String, Int))?) {
         inputTextFormatter = formatter
     }
 
@@ -166,33 +166,33 @@ public class InputTextField: UITextField, UITextFieldDelegate {
      - returns: false if the field's input is invalid or the validChecker is nil.
 
      */
-    public func isValid() -> Bool {
-        if let checker = validityChecker, enteredText = text {
-            return checker(input: enteredText)
+    open func isValid() -> Bool {
+        if let checker = validityChecker, let enteredText = text {
+            return checker(enteredText)
         }
         return false
     }
 
     // MARK: TextFieldDelegate
 
-    public func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
-        let cursorPosition = offsetFromPosition(beginningOfDocument, toPosition: selectedTextRange!.start)
+    open func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let cursorPosition = offset(from: beginningOfDocument, to: selectedTextRange!.start)
         let result: (String, Int)
 
         if let formatter = inputTextFormatter {
-            result = formatter(text: text ?? "", newInput: string, range: range, cursorPosition: cursorPosition)
+            result = formatter(text ?? "", string, range, cursorPosition)
         } else {
-            result = InputFormatter(type: InputFormattingType.None).resultingString(text ?? "", newInput: string, range: range, cursorPosition: cursorPosition)
+            result = InputFormatter(type: InputFormattingType.none).resultingString(text ?? "", newInput: string, range: range, cursorPosition: cursorPosition)
         }
 
         text = result.0
-        if let newPosition = self.positionFromPosition(beginningOfDocument, offset: result.1) {
-            self.textRangeFromPosition(newPosition, toPosition: newPosition)
-            selectedTextRange = textRangeFromPosition(newPosition, toPosition: newPosition)
+        if let newPosition = self.position(from: beginningOfDocument, offset: result.1) {
+            self.textRange(from: newPosition, to: newPosition)
+            selectedTextRange = textRange(from: newPosition, to: newPosition)
         }
 
         if let checker = validityChecker {
-            let validity = checker(input: text ?? "")
+            let validity = checker(text ?? "")
 
             if !valid && validity {
                 valid = true

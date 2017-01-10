@@ -11,7 +11,7 @@ import Foundation
 public extension UIScrollView {
 
     /// Resets the receiver's content offset to CGPointZero.  Animatable.
-    public func reset(animated: Bool = false) {
+    public func reset(_ animated: Bool = false) {
         setContentOffset(CGPoint.zero, animated: animated)
     }
 

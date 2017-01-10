@@ -14,19 +14,19 @@ public protocol TabBarDelegate: class {
     var selectedTabIndex: Int { get }
 
     /// Called when the user selects a tab
-    func selectTab(index: Int)
+    func selectTab(_ index: Int)
 
     /// A computed array of the tab names
     var tabNames: [String] { get }
 
 }
 
-public class TabBarController: UIViewController, TabBarDelegate {
+open class TabBarController: UIViewController, TabBarDelegate {
 
     // MARK: Public Properties
 
     /// The view controllers managed by the tab bar
-    public var viewControllers: [UIViewController] = [] {
+    open var viewControllers: [UIViewController] = [] {
         didSet {
             updateTabs()
             selectTab(0)
@@ -34,15 +34,15 @@ public class TabBarController: UIViewController, TabBarDelegate {
     }
 
     /// A computed array of the tab names
-    public var tabNames: [String] {
+    open var tabNames: [String] {
         return viewControllers.map { $0.title ?? L("Untitled") } ?? []
     }
 
     /// The index of the currently selected tab
-    public private(set) var selectedTabIndex = 0
+    open fileprivate(set) var selectedTabIndex = 0
 
     /// The tab bar's height
-    public var tabBarHeight: CGFloat = 50 {
+    open var tabBarHeight: CGFloat = 50 {
         didSet {
             layoutTabBar()
         }
@@ -51,7 +51,7 @@ public class TabBarController: UIViewController, TabBarDelegate {
     // MARK: Private Properties
 
     /// The controller's tab bar.  Defaults to nil, but will result in a crash if not set.
-    public var tabBar: BaseTabBar! {
+    open var tabBar: BaseTabBar! {
         didSet {
             tabBar.delegate = self
             view.addSubview(tabBar)
@@ -60,8 +60,8 @@ public class TabBarController: UIViewController, TabBarDelegate {
         }
     }
 
-    private var controllerContainer: UIView = UIView()
-    private var contentViewController: UIViewController?
+    fileprivate var controllerContainer: UIView = UIView()
+    fileprivate var contentViewController: UIViewController?
 
     // MARK: Initialization
 
@@ -77,7 +77,7 @@ public class TabBarController: UIViewController, TabBarDelegate {
 
     // MARK: Tab Bar Management
 
-    private func layoutTabBar() {
+    fileprivate func layoutTabBar() {
 
         tabBar.x = 0
         tabBar.y = view.height - tabBarHeight
@@ -91,7 +91,7 @@ public class TabBarController: UIViewController, TabBarDelegate {
 
     }
 
-    private func updateTabs() {
+    fileprivate func updateTabs() {
         tabBar?.layout()
     }
 
@@ -101,13 +101,13 @@ public class TabBarController: UIViewController, TabBarDelegate {
     - parameter tab: The index of the tab to select.
 
     */
-    public func selectTab(tab: Int) {
+    open func selectTab(_ tab: Int) {
 
         selectedTabIndex = tab
         tabBar.selectTab(tab)
 
         if let c = contentViewController {
-            c.willMoveToParentViewController(nil)
+            c.willMove(toParentViewController: nil)
             c.view.removeFromSuperview()
             c.removeFromParentViewController()
         }
@@ -116,7 +116,7 @@ public class TabBarController: UIViewController, TabBarDelegate {
         self.addChildViewController(new)
         new.view.frame = controllerContainer.bounds
         controllerContainer.addSubview(new.view)
-        new.didMoveToParentViewController(self)
+        new.didMove(toParentViewController: self)
 
         contentViewController = new
 
@@ -125,18 +125,18 @@ public class TabBarController: UIViewController, TabBarDelegate {
     // MARK: Lifecycle
 
     /// :nodoc:
-    public override func loadView() {
+    open override func loadView() {
         super.loadView()
         view.addSubview(controllerContainer)
     }
 
     /// :nodoc:
-    override public func viewDidLoad() {
+    override open func viewDidLoad() {
         super.viewDidLoad()
     }
 
     /// :nodoc:
-    public override func viewDidLayoutSubviews() {
+    open override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         layoutTabBar()
     }

@@ -17,7 +17,7 @@ After setting the placeholderImage or the placeholderView, set the frame
 of the placeholderView for either to be visible.
 
 */
-public class PlaceholderImageView: UIView, URLImageViewDelegate {
+open class PlaceholderImageView: UIView, URLImageViewDelegate {
 
     // MARK: Public Properties
 
@@ -26,7 +26,7 @@ public class PlaceholderImageView: UIView, URLImageViewDelegate {
     Setting this will replace the placeholderView.
 
     */
-    public var placeholderImage: UIImage? {
+    open var placeholderImage: UIImage? {
         get {
             if let placeholder = placeholderView as? UIImageView {
                 return placeholder.image
@@ -45,7 +45,7 @@ public class PlaceholderImageView: UIView, URLImageViewDelegate {
     Setting this will replace the placeholderImage.
 
     */
-    public var placeholderView: UIView? {
+    open var placeholderView: UIView? {
         willSet {
             if newValue == nil {
                 placeholderView?.removeFromSuperview()
@@ -53,14 +53,14 @@ public class PlaceholderImageView: UIView, URLImageViewDelegate {
         }
         didSet {
             if let v = placeholderView {
-                placeholderView?.hidden = imageView.image != nil
+                placeholderView?.isHidden = imageView.image != nil
                 addSubview(v)
             }
         }
     }
 
     /// The image to be displayed
-    public var image: UIImage? {
+    open var image: UIImage? {
         get {
             return imageView.image
         }
@@ -68,21 +68,21 @@ public class PlaceholderImageView: UIView, URLImageViewDelegate {
             imageView.image = newValue
 
             if image != nil {
-                placeholderView?.hidden = true
+                placeholderView?.isHidden = true
             } else {
-                placeholderView?.hidden = false
+                placeholderView?.isHidden = false
             }
         }
     }
 
     /// The URL of the image displayed in the view
-    public var imageURL: NSURL? {
+    open var imageURL: URL? {
         get {
-            return imageView.imageURL
+            return imageView.imageURL as URL?
         }
         set {
             if newValue == nil {
-                placeholderView?.hidden = false
+                placeholderView?.isHidden = false
             }
 
             imageView.imageURL = newValue
@@ -90,7 +90,7 @@ public class PlaceholderImageView: UIView, URLImageViewDelegate {
     }
 
     /// The layout behavior for the view's image
-    public var placeholderContentMode: UIViewContentMode? {
+    open var placeholderContentMode: UIViewContentMode? {
         didSet {
             if let mode = placeholderContentMode {
                 placeholderView?.contentMode = mode
@@ -98,7 +98,7 @@ public class PlaceholderImageView: UIView, URLImageViewDelegate {
         }
     }
 
-    public var imageContentMode: UIViewContentMode? {
+    open var imageContentMode: UIViewContentMode? {
         didSet {
             if let mode = imageContentMode {
                 imageView.contentMode = mode
@@ -108,7 +108,7 @@ public class PlaceholderImageView: UIView, URLImageViewDelegate {
 
     // MARK: Private Properties
 
-    private var imageView = URLImageView()
+    fileprivate var imageView = URLImageView()
 
     // MARK: Initialization
 
@@ -145,7 +145,7 @@ public class PlaceholderImageView: UIView, URLImageViewDelegate {
     }
 
     /// :nodoc:
-    private func commonInit() {
+    fileprivate func commonInit() {
         addSubview(imageView)
         imageView.delegate = self
     }
@@ -153,25 +153,25 @@ public class PlaceholderImageView: UIView, URLImageViewDelegate {
     // MARK: Manage Image Requests
 
     /// Cancels the current image load task
-    public func cancelImageLoad() {
+    open func cancelImageLoad() {
         imageView.cancelImageLoad()
     }
 
     // MARK: Layout
 
-    public override func layoutSubviews() {
+    open override func layoutSubviews() {
         super.layoutSubviews()
         imageView.frame = bounds
     }
 
     // MARK: URLImageViewDelegate
 
-    func loadedImage(image image: UIImage?, error: NSError?) {
+    func loadedImage(image: UIImage?, error: Error?) {
         if let loadedImage = image {
             self.image = loadedImage
-            placeholderView?.hidden = true
+            placeholderView?.isHidden = true
         } else {
-            placeholderView?.hidden = false
+            placeholderView?.isHidden = false
         }
     }
 }

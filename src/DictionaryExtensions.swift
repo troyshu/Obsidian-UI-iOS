@@ -10,7 +10,7 @@ import Foundation
 
 extension Dictionary {
 
-    private init(_ pairs: [Element]) {
+    fileprivate init(_ pairs: [Element]) {
         self.init()
         for (k, v) in pairs {
             self[k] = v
@@ -25,7 +25,7 @@ extension Dictionary {
     :return A mapped dictionary
 
     */
-    func map<OutKey: Hashable, OutValue>(transform: Element -> (OutKey, OutValue)) -> [OutKey: OutValue] {
+    func map<OutKey: Hashable, OutValue>(_ transform: (Element) -> (OutKey, OutValue)) -> [OutKey: OutValue] {
         return Dictionary<OutKey, OutValue>(self.map(transform))
     }
 
@@ -37,7 +37,7 @@ extension Dictionary {
     :return A filtered dictionary
 
     */
-    func filter(includeElement: Element -> Bool) -> [Key: Value] {
+    func filter(_ includeElement: (Element) -> Bool) -> [Key: Value] {
         return Dictionary(self.filter(includeElement))
     }
 

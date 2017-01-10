@@ -18,7 +18,7 @@ public extension UIColor {
         UIRectFill(rect)
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-        return image
+        return image!
     }
 
 }
@@ -34,9 +34,9 @@ Blends two UIColors
 - returns: The UIColor resulting from the blend operation
 
 */
-public func blendColor(color1: UIColor, _ color2: UIColor, _ mode: ((CGFloat, CGFloat) -> CGFloat), _ premultiplyAlpha: Bool = false) -> UIColor {
+public func blendColor(_ color1: UIColor, _ color2: UIColor, _ mode: @escaping ((CGFloat, CGFloat) -> CGFloat), _ premultiplyAlpha: Bool = false) -> UIColor {
 
-    func transform(a: CGFloat, _ b: CGFloat) -> CGFloat {
+    func transform(_ a: CGFloat, _ b: CGFloat) -> CGFloat {
         return min(1.0, max(0.0, mode(a, b)))
     }
 

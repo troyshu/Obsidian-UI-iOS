@@ -19,8 +19,8 @@ Returns a localized string from the main bundle's default localized strings tabl
 - returns: The localized string if it exists, otherwise returns the key passed in.
 
 */
-public func L(key: String) -> String {
-    return NSLocalizedString(key, tableName: nil, bundle: NSBundle.mainBundle(), comment: "")
+public func L(_ key: String) -> String {
+    return NSLocalizedString(key, tableName: nil, bundle: Bundle.main, comment: "")
 }
 
 /// Returns a random UIColor
@@ -37,15 +37,10 @@ public func randomColor() -> UIColor {
 }
 
 /// The main queue (equivalent to calling `dispatch_get_main_queue()`)
-public let MainQueue: dispatch_queue_t = {
-    return dispatch_get_main_queue()
-    }()
-
+public let MainQueue: DispatchQueue = .main
 
 /// The background queue (equivalent to calling `dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)`)
-public let BackgroundQueue: dispatch_queue_t = {
-    return GlobalQueue()
-    }()
+public let BackgroundQueue = GlobalQueue()
 
 /**
 Returns the global queue with the passed identifier
@@ -55,8 +50,8 @@ Returns the global queue with the passed identifier
 - returns: The requested global concurrent queue.
 
 */
-public func GlobalQueue(identifier: Int = DISPATCH_QUEUE_PRIORITY_BACKGROUND) -> dispatch_queue_t {
-    return dispatch_get_global_queue(identifier, 0)
+public func GlobalQueue(_ identifier: DispatchQoS.QoSClass = .background) -> DispatchQueue {
+    return .global(qos: identifier)
 }
 
 internal struct Constants {
@@ -65,20 +60,21 @@ internal struct Constants {
     static let DefaultIndicatorName = "com.tendigi.alfredo.defaultIndicator"
 }
 
-internal let NibCache = MemoryCache<NSString, UINib>(identifier: Constants.NibCacheName)
+internal let NibCache = MemoryCache<String, UINib>(identifier: Constants.NibCacheName)
 
 /// Return the index of an element matching the passed predicate in the given sequence, or nil if the element is not found in the sequence.
-public func search<C: CollectionType>(source: C, predicate: (C.Generator.Element) -> Bool) -> C.Index? {
-    for i in source.indices {
-        if predicate(source[i]) {
-            return i
+public func search<C: Collection>(_ source: C, predicate: (C.Iterator.Element) -> Bool) -> C.Index? {
+    var index = source.startIndex
+    while index != source.endIndex {
+        if predicate(source[index]) {
+            return index
         }
     }
     return nil
 }
 
 /// Prints a collection in a human-readable format
-public func print<A: CollectionType>(collection: A ) {
+public func print<A: Collection>(_ collection: A ) {
     let sz = collection.count
     if sz == 0 {
         Swift.print("[]")
@@ -93,7 +89,7 @@ public func print<A: CollectionType>(collection: A ) {
 }
 
 /// Returns a random Double between min and max
-public func rand(min: Double, max: Double) -> Double {
+public func rand(_ min: Double, max: Double) -> Double {
     let delta = max - min
     let resolution: UInt32 = 1024
     let rand = arc4random_uniform(resolution)
@@ -101,26 +97,26 @@ public func rand(min: Double, max: Double) -> Double {
 }
 
 /// Returns a random Float between min and max
-public func rand(min: Float, max: Float) -> Float {
+public func rand(_ min: Float, max: Float) -> Float {
     return Float(rand(Double(min), max: Double(max)))
 }
 
 /// Returns a random CGFloat between min and max
-public func rand(min: CGFloat, max: CGFloat) -> CGFloat {
+public func rand(_ min: CGFloat, max: CGFloat) -> CGFloat {
     return CGFloat(rand(Double(min), max: Double(max)))
 }
 
 /// Returns a closure that calls the passed function once it has been left alone for the passed delay
-public func debounce(delay: NSTimeInterval, function: VoidFunction) -> VoidFunction {
-    let queue = dispatch_get_main_queue()
-    var lastFireTime: dispatch_time_t = 0
-    let dispatchDelay = Int64(delay * Double(NSEC_PER_SEC))
+public func debounce(_ delay: TimeInterval, function: @escaping VoidFunction) -> VoidFunction {
+    let queue = DispatchQueue.main
+    var lastFireTime: DispatchTime = .now()
+    let dispatchDelay = Int(delay * 1000)
     return {
-        lastFireTime = dispatch_time(DISPATCH_TIME_NOW, 0)
-        let fireTime = dispatch_time(DISPATCH_TIME_NOW, dispatchDelay)
-        dispatch_after(fireTime, queue) {
-            let now = dispatch_time(DISPATCH_TIME_NOW, 0)
-            let when = dispatch_time(lastFireTime, dispatchDelay)
+        lastFireTime = .now()
+        let fireTime: DispatchTime = .now() + .milliseconds(dispatchDelay)
+        queue.asyncAfter(deadline: fireTime) {
+            let now = DispatchTime.now() + Double(0) / Double(NSEC_PER_SEC)
+            let when = lastFireTime + Double(dispatchDelay) / Double(NSEC_PER_SEC)
             if now >= when {
                 function()
             }
@@ -129,9 +125,7 @@ public func debounce(delay: NSTimeInterval, function: VoidFunction) -> VoidFunct
 }
 
 /// Calls a closure after a time delay
-public func delay(delay: Double, closure:()->()) {
-    dispatch_after(
-        dispatch_time(
-            DISPATCH_TIME_NOW, Int64(delay * Double(NSEC_PER_SEC))
-        ), dispatch_get_main_queue(), closure)
+public func delay(_ delay: Double, closure:@escaping ()->()) {
+    DispatchQueue.main.asyncAfter(
+        deadline: DispatchTime.now() + Double(Int64(delay * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: closure)
 }

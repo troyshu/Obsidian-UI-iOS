@@ -12,7 +12,7 @@ public struct Action {
 
     // MARK: Types
 
-    public typealias Handler = (action: Action) -> ()
+    public typealias Handler = (_ action: Action) -> ()
 
     // MARK: Properties
 
@@ -55,7 +55,7 @@ public struct Action {
     - returns: An Action object
 
     */
-    public init(title: String, textColor: UIColor = UIColor.blackColor(), highlightedTextColor: UIColor? = nil, backgroundColor: UIColor = UIColor.whiteColor(), highlightedBackgroundColor: UIColor? = nil, height: CGFloat = 64, font: UIFont = UIFont.boldSystemFontOfSize(20.0), handler: Handler?) {
+    public init(title: String, textColor: UIColor = UIColor.black, highlightedTextColor: UIColor? = nil, backgroundColor: UIColor = UIColor.white, highlightedBackgroundColor: UIColor? = nil, height: CGFloat = 64, font: UIFont = UIFont.boldSystemFont(ofSize: 20.0), handler: Handler?) {
         self.title = title
         self.textColor = textColor
         self.highlightedTextColor = highlightedTextColor ?? textColor
@@ -72,9 +72,9 @@ private class ActionSheetPresentationController: UIPresentationController {
 
     // MARK: Properties
 
-    private var height: CGFloat = 0
+    fileprivate var height: CGFloat = 0
 
-    private let dimmingView: UIView = {
+    fileprivate let dimmingView: UIView = {
         let view = UIView()
         view.backgroundColor = ActionSheetController.ActionSheetControllerConstants.DimmingColor
         return view
@@ -82,44 +82,44 @@ private class ActionSheetPresentationController: UIPresentationController {
 
     // MARK: Overrides
 
-    private override func presentationTransitionWillBegin() {
+    fileprivate override func presentationTransitionWillBegin() {
 
         super.presentationTransitionWillBegin()
 
         dimmingView.frame = containerView!.bounds
         dimmingView.alpha = 0.0
 
-        let tap = UITapGestureRecognizer(target: self, action: "dismissController:")
+        let tap = UITapGestureRecognizer(target: self, action: #selector(ActionSheetPresentationController.dismissController(_:)))
         dimmingView.addGestureRecognizer(tap)
 
         containerView!.addSubview(dimmingView)
-        containerView!.addSubview(presentedView()!)
+        containerView!.addSubview(presentedView!)
 
-        let coordinator = presentingViewController.transitionCoordinator()
+        let coordinator = presentingViewController.transitionCoordinator
 
-        coordinator?.animateAlongsideTransition({ (context) in
+        coordinator?.animate(alongsideTransition: { (context) in
             self.dimmingView.alpha = 1.0
             }, completion: nil)
 
     }
 
-    private override func dismissalTransitionWillBegin() {
+    fileprivate override func dismissalTransitionWillBegin() {
 
-        let coordinator = presentingViewController.transitionCoordinator()
+        let coordinator = presentingViewController.transitionCoordinator
 
-        coordinator?.animateAlongsideTransition({ (context) in
+        coordinator?.animate(alongsideTransition: { (context) in
             self.dimmingView.alpha = 0.0
             }, completion: nil)
 
     }
 
-    private override func dismissalTransitionDidEnd(completed: Bool) {
+    fileprivate override func dismissalTransitionDidEnd(_ completed: Bool) {
         super.dismissalTransitionDidEnd(completed)
         dimmingView.removeFromSuperview()
     }
 
 
-    private override func frameOfPresentedViewInContainerView() -> CGRect {
+    fileprivate override var frameOfPresentedViewInContainerView : CGRect {
         if let bounds = containerView?.bounds {
             return CGRect(
                 origin: CGPoint(
@@ -137,9 +137,9 @@ private class ActionSheetPresentationController: UIPresentationController {
 
     // MARK: Actions
 
-    private dynamic func dismissController(sender: UIGestureRecognizer) {
-        presentingViewController.dismissViewControllerAnimated(true) { () -> Void in
-            NSNotificationCenter.defaultCenter().postNotificationName("actionSheetDismissedByTapAbove", object: self)
+    fileprivate dynamic func dismissController(_ sender: UIGestureRecognizer) {
+        presentingViewController.dismiss(animated: true) { () -> Void in
+            NotificationCenter.default.post(name: Notification.Name(rawValue: "actionSheetDismissedByTapAbove"), object: self)
         }
     }
 
@@ -157,7 +157,7 @@ public protocol ActionSheetDelegate: class {
     - parameter actionSheet the action sheet that was dismissed
 
     */
-    func actionSheetDidDismissByTappingOutside(actionSheet: ActionSheetController)
+    func actionSheetDidDismissByTappingOutside(_ actionSheet: ActionSheetController)
 }
 
 public final class ActionSheetController: UIViewController, UIViewControllerTransitioningDelegate {
@@ -172,14 +172,14 @@ public final class ActionSheetController: UIViewController, UIViewControllerTran
 
     // MARK: Constants
 
-    private struct ActionSheetControllerConstants {
+    fileprivate struct ActionSheetControllerConstants {
         static let DimmingColor = UIColor(red:0.14, green:0.14, blue:0.15, alpha:0.7)
-        static let ButtonDimmingColor = UIColor.whiteColor().colorWithAlphaComponent(0.1)
+        static let ButtonDimmingColor = UIColor.white.withAlphaComponent(0.1)
     }
 
     // MARK: Private Properties
 
-    private var buttons: [UIButton] = []
+    fileprivate var buttons: [UIButton] = []
 
     // MARK: Initialization
 
@@ -192,10 +192,10 @@ public final class ActionSheetController: UIViewController, UIViewControllerTran
 
     */
     public init(actions actionSheetActions: [Action]) {
-        actions = actionSheetActions.reverse()
+        actions = actionSheetActions.reversed()
         super.init(nibName: nil, bundle: nil)
         transitioningDelegate = self
-        modalPresentationStyle = .Custom
+        modalPresentationStyle = .custom
     }
 
     /// :nodoc:
@@ -206,18 +206,18 @@ public final class ActionSheetController: UIViewController, UIViewControllerTran
     // MARK: Status Bar
 
     /// :nodoc:
-    public override func preferredStatusBarStyle() -> UIStatusBarStyle {
-        return presentingViewController?.preferredStatusBarStyle() ?? super.preferredStatusBarStyle()
+    public override var preferredStatusBarStyle : UIStatusBarStyle {
+        return presentingViewController?.preferredStatusBarStyle ?? super.preferredStatusBarStyle
     }
 
     /// :nodoc:
-    public override func prefersStatusBarHidden() -> Bool {
-        return presentingViewController?.prefersStatusBarHidden() ?? super.prefersStatusBarHidden()
+    public override var prefersStatusBarHidden : Bool {
+        return presentingViewController?.prefersStatusBarHidden ?? super.prefersStatusBarHidden
     }
 
     /// :nodoc:
-    public override func preferredStatusBarUpdateAnimation() -> UIStatusBarAnimation {
-        return presentingViewController?.preferredStatusBarUpdateAnimation() ?? super.preferredStatusBarUpdateAnimation()
+    public override var preferredStatusBarUpdateAnimation : UIStatusBarAnimation {
+        return presentingViewController?.preferredStatusBarUpdateAnimation ?? super.preferredStatusBarUpdateAnimation
     }
 
     // MARK: Lifecycle
@@ -234,21 +234,21 @@ public final class ActionSheetController: UIViewController, UIViewControllerTran
         // Create the buttons
 
         buttons = actions.map({ action -> UIButton in
-            let button = ColorButton(type: .Custom)
+            let button = ColorButton(type: .custom)
 
             button.translatesAutoresizingMaskIntoConstraints = false
 
-            button.setTitle(action.title, forState: .Normal)
+            button.setTitle(action.title, for: UIControlState())
 
-            button.setTitleColor(action.textColor, forState: .Normal)
-            button.setTitleColor(action.highlightedTextColor, forState: .Highlighted)
+            button.setTitleColor(action.textColor, for: UIControlState())
+            button.setTitleColor(action.highlightedTextColor, for: .highlighted)
 
-            button.setBackgroundColor(action.backgroundColor, forState: .Normal)
-            button.setBackgroundColor(action.highlightedBackgroundColor, forState: .Highlighted)
+            button.setBackgroundColor(action.backgroundColor, forState: UIControlState())
+            button.setBackgroundColor(action.highlightedBackgroundColor, forState: .highlighted)
 
             button.titleLabel?.font = action.font
 
-            addHandler(button, events: .TouchUpInside, target: self, handler: self.dynamicType.buttonSelected)
+            addHandler(button, events: .touchUpInside, target: self, handler: type(of: self).buttonSelected)
 
             return button
         })
@@ -261,7 +261,7 @@ public final class ActionSheetController: UIViewController, UIViewControllerTran
 
         let horizontalConstraints = buttons.reduce([NSLayoutConstraint]()) { arr, button in
             let views = [ "button" : button ]
-            let constraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[button]-0-|", options: [], metrics: nil, views: views)
+            let constraints = NSLayoutConstraint.constraints(withVisualFormat: "H:|-0-[button]-0-|", options: [], metrics: nil, views: views)
             return arr + constraints
         }
 
@@ -269,32 +269,32 @@ public final class ActionSheetController: UIViewController, UIViewControllerTran
 
         // Constrain the buttons vertically
 
-        let verticalConstraints = buttons.enumerate().reduce([NSLayoutConstraint]()) { arr, el in
-            let action = self.actions[el.index]
-            let pin = el.index == 0 ? self.view : buttons[el.index - 1]
-            let targetAttribute: NSLayoutAttribute = el.index == 0 ? .Bottom : .Top
+        let verticalConstraints = buttons.enumerated().reduce([NSLayoutConstraint]()) { arr, el in
+            let action = self.actions[el.offset]
+            let pin = el.offset == 0 ? self.view : buttons[el.offset - 1]
+            let targetAttribute: NSLayoutAttribute = el.offset == 0 ? .bottom : .top
             let constraints = [
-                NSLayoutConstraint(item: el.element, attribute: .Bottom, relatedBy: .Equal, toItem: pin, attribute: targetAttribute, multiplier: 1, constant: 0),
-                NSLayoutConstraint(item: el.element, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: action.height)
+                NSLayoutConstraint(item: el.element, attribute: .bottom, relatedBy: .equal, toItem: pin, attribute: targetAttribute, multiplier: 1, constant: 0),
+                NSLayoutConstraint(item: el.element, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: action.height)
             ]
             return arr + constraints
         }
 
         view.addConstraints(verticalConstraints)
 
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "userTappedAbove", name: "actionSheetDismissedByTapAbove", object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(ActionSheetController.userTappedAbove), name: NSNotification.Name(rawValue: "actionSheetDismissedByTapAbove"), object: nil)
     }
 
     // MARK: Actions
 
-    private var selectedButton = false
+    fileprivate var selectedButton = false
 
-    private func buttonSelected(sender: UIButton) {
+    fileprivate func buttonSelected(_ sender: UIButton) {
         selectedButton = true
-        if let index = buttons.indexOf(sender) {
+        if let index = buttons.index(of: sender) {
             let action = actions[index]
-            dismissViewControllerAnimated(true) {
-                action.handler?(action: action)
+            dismiss(animated: true) {
+                action.handler?(action)
             }
         }
     }
@@ -305,8 +305,8 @@ public final class ActionSheetController: UIViewController, UIViewControllerTran
 
     // MARK: UIViewControllerTransitioningDelegate
 
-    public func presentationControllerForPresentedViewController(presented: UIViewController, presentingViewController presenting: UIViewController, sourceViewController source: UIViewController) -> UIPresentationController? {
-        let controller = ActionSheetPresentationController(presentedViewController: presented, presentingViewController: presenting)
+    public func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
+        let controller = ActionSheetPresentationController(presentedViewController: presented, presenting: presenting)
         controller.height = actions.reduce(0) { $0 + $1.height }
         return controller
     }

@@ -13,9 +13,9 @@ public struct Logger {
     // MARK: Properties
 
     /// The date formatter used by the logger
-    public static var dateFormatter: NSDateFormatter = {
-        let defaultDateFormatter = NSDateFormatter()
-        defaultDateFormatter.locale = NSLocale.currentLocale()
+    public static var dateFormatter: DateFormatter = {
+        let defaultDateFormatter = DateFormatter()
+        defaultDateFormatter.locale = Locale.current
         defaultDateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
         return defaultDateFormatter
         }()
@@ -42,26 +42,26 @@ public struct Logger {
 
     internal enum LogLevel: Int, Comparable, CustomStringConvertible {
 
-        case Verbose
-        case Debug
-        case Info
-        case Warning
-        case Error
-        case Severe
+        case verbose
+        case debug
+        case info
+        case warning
+        case error
+        case severe
 
         internal var description: String {
             switch self {
-            case .Verbose:
+            case .verbose:
                 return "Verbose"
-            case .Debug:
+            case .debug:
                 return "Debug"
-            case .Info:
+            case .info:
                 return "Info"
-            case .Warning:
+            case .warning:
                 return "Warning"
-            case .Error:
+            case .error:
                 return "Error"
-            case .Severe:
+            case .severe:
                 return "Severe"
             }
         }
@@ -75,46 +75,46 @@ public struct Logger {
     // MARK: Logging
 
     /// Log the passed string at the verbose level
-    public static func verbose(@autoclosure closure: () -> String?, functionName: String = __FUNCTION__, fileName: String = __FILE__, lineNumber: Int = __LINE__) {
-        log(.Verbose, date: NSDate(), logMessage: closure(), functionName: functionName, fileName: fileName, lineNumber: lineNumber)
+    public static func verbose(_ closure: @autoclosure () -> String?, functionName: String = #function, fileName: String = #file, lineNumber: Int = #line) {
+        log(.verbose, date: Date(), logMessage: closure(), functionName: functionName, fileName: fileName, lineNumber: lineNumber)
     }
 
     /// Log the passed string at the debug level
-    public static func debug(@autoclosure closure: () -> String?, functionName: String = __FUNCTION__, fileName: String = __FILE__, lineNumber: Int = __LINE__) {
-        log(.Debug, date: NSDate(), logMessage: closure(), functionName: functionName, fileName: fileName, lineNumber: lineNumber)
+    public static func debug(_ closure: @autoclosure () -> String?, functionName: String = #function, fileName: String = #file, lineNumber: Int = #line) {
+        log(.debug, date: Date(), logMessage: closure(), functionName: functionName, fileName: fileName, lineNumber: lineNumber)
     }
 
     /// Log the passed string at the info level
-    public static func info(@autoclosure closure: () -> String?, functionName: String = __FUNCTION__, fileName: String = __FILE__, lineNumber: Int = __LINE__) {
-        log(.Info, date: NSDate(), logMessage: closure(), functionName: functionName, fileName: fileName, lineNumber: lineNumber)
+    public static func info(_ closure: @autoclosure () -> String?, functionName: String = #function, fileName: String = #file, lineNumber: Int = #line) {
+        log(.info, date: Date(), logMessage: closure(), functionName: functionName, fileName: fileName, lineNumber: lineNumber)
     }
 
     /// Log the passed string at the warning level
-    public static func warning(@autoclosure closure: () -> String?, functionName: String = __FUNCTION__, fileName: String = __FILE__, lineNumber: Int = __LINE__) {
-        log(.Warning, date: NSDate(), logMessage: closure(), functionName: functionName, fileName: fileName, lineNumber: lineNumber)
+    public static func warning(_ closure: @autoclosure () -> String?, functionName: String = #function, fileName: String = #file, lineNumber: Int = #line) {
+        log(.warning, date: Date(), logMessage: closure(), functionName: functionName, fileName: fileName, lineNumber: lineNumber)
     }
 
     /// Log the passed string at the error level
-    public static func error(@autoclosure closure: () -> String?, functionName: String = __FUNCTION__, fileName: String = __FILE__, lineNumber: Int = __LINE__) {
-        log(.Error, date: NSDate(), logMessage: closure(), functionName: functionName, fileName: fileName, lineNumber: lineNumber)
+    public static func error(_ closure: @autoclosure () -> String?, functionName: String = #function, fileName: String = #file, lineNumber: Int = #line) {
+        log(.error, date: Date(), logMessage: closure(), functionName: functionName, fileName: fileName, lineNumber: lineNumber)
     }
 
     /// Log the passed string at the severe level
-    public static func severe(@autoclosure closure: () -> String?, functionName: String = __FUNCTION__, fileName: String = __FILE__, lineNumber: Int = __LINE__) {
-        log(.Severe, date: NSDate(), logMessage: closure(), functionName: functionName, fileName: fileName, lineNumber: lineNumber)
+    public static func severe(_ closure: @autoclosure () -> String?, functionName: String = #function, fileName: String = #file, lineNumber: Int = #line) {
+        log(.severe, date: Date(), logMessage: closure(), functionName: functionName, fileName: fileName, lineNumber: lineNumber)
     }
 
-    internal static func log(level: LogLevel, date: NSDate, logMessage: String?, functionName: String, fileName: String, lineNumber: Int) {
+    internal static func log(_ level: LogLevel, date: Date, logMessage: String?, functionName: String, fileName: String, lineNumber: Int) {
 
 
-        let threadName = "[" + (NSThread.isMainThread() ? "main" : (NSThread.currentThread().name != "" ? (NSThread.currentThread().name ?? "Unknown Thread") : String(format:"%p", NSThread.currentThread()))) + "] "
+        let threadName = "[" + (Thread.isMainThread ? "main" : (Thread.current.name != "" ? (Thread.current.name ?? "Unknown Thread") : String(format:"%p", Thread.current))) + "] "
 
         BackgroundQueue.async {
 
             var details = ""
 
             if self.showDate {
-                details += self.dateFormatter.stringFromDate(date) + " "
+                details += self.dateFormatter.string(from: date) + " "
             }
 
             if self.showLogLevel {

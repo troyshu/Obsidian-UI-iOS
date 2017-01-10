@@ -9,22 +9,22 @@
 import Foundation
 
 ///A view meant for UINavigationItem's titleView. Has two labels - one larger(title) and one below and smaller(tagline).
-public class TitleTaglineView: UIView {
+open class TitleTaglineView: UIView {
 
     /// Height of the top, title label.
-    public var titleHeight: CGFloat = 26
+    open var titleHeight: CGFloat = 26
 
     /// What the top, title label reads.
-    public var title = "Title"
+    open var title = "Title"
 
     /// What the bottom, tagline label reads.
-    public var tagline = "Tagline"
+    open var tagline = "Tagline"
 
     /// Font of the title label.
-    public var titleFont = UIFont.preferredFontForTextStyle(UIFontTextStyleHeadline)
+    open var titleFont = UIFont.preferredFont(forTextStyle: UIFontTextStyle.headline)
 
     /// Font of the tagline label.
-    public var taglineFont = UIFont.preferredFontForTextStyle(UIFontTextStyleSubheadline)
+    open var taglineFont = UIFont.preferredFont(forTextStyle: UIFontTextStyle.subheadline)
 
     /**
     Initializes an ALFTitleTaglineView
@@ -44,17 +44,17 @@ public class TitleTaglineView: UIView {
         super.init(coder: aDecoder)
     }
 
-    override public func layoutSubviews() {
+    override open func layoutSubviews() {
         let titleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: frame.size.width, height: titleHeight))
-        titleLabel.textColor = UIColor.whiteColor()
-        titleLabel.textAlignment = NSTextAlignment.Center
+        titleLabel.textColor = UIColor.white
+        titleLabel.textAlignment = NSTextAlignment.center
         titleLabel.font = titleFont
         titleLabel.text = title
         addSubview(titleLabel)
 
         let taglineLabel = UILabel(frame: CGRect(x: 0, y: titleHeight, width: frame.size.width, height: frame.size.height - titleHeight))
-        taglineLabel.textColor = UIColor.whiteColor()
-        taglineLabel.textAlignment = NSTextAlignment.Center
+        taglineLabel.textColor = UIColor.white
+        taglineLabel.textAlignment = NSTextAlignment.center
         taglineLabel.font = taglineFont
         taglineLabel.text = tagline
         addSubview(taglineLabel)

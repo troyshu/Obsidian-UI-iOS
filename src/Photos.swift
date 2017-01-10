@@ -13,17 +13,17 @@ import Photos
  This class manages photo library assets.
  Adding and retreiving photos happens on an arbitrary serial queue. Dispatch calls to the maine queue to update the app's UI as a result of a change.
  */
-public class Photos {
+open class Photos {
     
     public typealias Completion = ((Bool, NSError?) -> Void)?
     public typealias ImageCompletion = ((UIImage?) -> Void)?
     
-    private func performChanges(changeBlock: dispatch_block_t, completionHandler: ((Bool, NSError?) -> Void)!) {
-        PHPhotoLibrary.sharedPhotoLibrary().performChanges(changeBlock, completionHandler: completionHandler)
+    fileprivate func performChanges(_ changeBlock: @escaping ()->(), completionHandler: ((Bool, NSError?) -> Void)!) {
+        PHPhotoLibrary.shared().performChanges(changeBlock, completionHandler: completionHandler as! ((Bool, Error?) -> Void)?)
     }
     
-    private func performChanges(changeBlock: dispatch_block_t) {
-        PHPhotoLibrary.sharedPhotoLibrary().performChanges(changeBlock, completionHandler: nil)
+    fileprivate func performChanges(_ changeBlock: @escaping ()->()) {
+        PHPhotoLibrary.shared().performChanges(changeBlock, completionHandler: nil)
     }
     
     /**
@@ -33,10 +33,10 @@ public class Photos {
      - parameter completion: called after image is saved
      
      */
-    public func saveImage(image: UIImage, completion: Completion = nil) {
+    open func saveImage(_ image: UIImage, completion: Completion = nil) {
         performChanges({ () -> Void in
-            PHAssetChangeRequest.creationRequestForAssetFromImage(image)
-            }, completionHandler: completion)
+            PHAssetChangeRequest.creationRequestForAsset(from: image)
+        }, completionHandler: completion)
     }
     
     /**
@@ -46,17 +46,17 @@ public class Photos {
      - parameter completion: Called after the image is saved
      
      */
-    public func saveImage(URL: NSURL, completion: Completion = nil) {
+    open func saveImage(_ URL: Foundation.URL, completion: Completion = nil) {
         performChanges({ () -> Void in
-            PHAssetChangeRequest.creationRequestForAssetFromImageAtFileURL(URL)
-            }, completionHandler: completion)
+            PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: URL)
+        }, completionHandler: completion)
     }
     
-    private func createAssetCollection(name: String) -> PHAssetCollection? {
+    fileprivate func createAssetCollection(_ name: String) -> PHAssetCollection? {
         let fetchOptions = PHFetchOptions()
-        let fetchResult = PHAssetCollection.fetchAssetCollectionsWithType(PHAssetCollectionType.Album, subtype: PHAssetCollectionSubtype.Any, options: fetchOptions)
+        let fetchResult = PHAssetCollection.fetchAssetCollections(with: PHAssetCollectionType.album, subtype: PHAssetCollectionSubtype.any, options: fetchOptions)
         var alreadyExists = false
-        for var i = 0; i < fetchResult.count; ++i {
+        for i in 0 ..< fetchResult.count {
             if let collection = fetchResult[i] as? PHAssetCollection {
                 if collection.localizedTitle == name {
                     alreadyExists = true
@@ -68,11 +68,10 @@ public class Photos {
         var assetCollection: PHAssetCollection?
         if !alreadyExists {
             performChanges({ () -> Void in
-                PHAssetCollectionChangeRequest.creationRequestForAssetCollectionWithTitle(name)
-                
-                }, completionHandler: { (success, error) -> Void in
-                    let collectionFetchResult = PHAssetCollection.fetchAssetCollectionsWithLocalIdentifiers([name], options: nil)
-                    assetCollection =  collectionFetchResult.firstObject as? PHAssetCollection
+                PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: name)
+            }, completionHandler: { (success, error) -> Void in
+                let collectionFetchResult = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [name], options: nil)
+                assetCollection =  collectionFetchResult.firstObject
             })
         }
         
@@ -87,16 +86,16 @@ public class Photos {
      - parameter completion: Called after the image is saved
      
      */
-    public func saveImageToAlbum(image: UIImage, albumName: String, completion: Completion) {
+    open func saveImageToAlbum(_ image: UIImage, albumName: String, completion: Completion) {
         let assetCollection = createAssetCollection(albumName)
         
         performChanges({ () -> Void in
-            let assetRequest = PHAssetChangeRequest.creationRequestForAssetFromImage(image)
+            let assetRequest = PHAssetChangeRequest.creationRequestForAsset(from: image)
             let assetPlaceholder = assetRequest.placeholderForCreatedAsset
-            let albumRequest = PHAssetCollectionChangeRequest(forAssetCollection: assetCollection!)
+            let albumRequest = PHAssetCollectionChangeRequest(for: assetCollection!)
             let enumeration: NSArray = [assetPlaceholder!]
             albumRequest!.addAssets(enumeration)
-            }, completionHandler: completion)
+        }, completionHandler: completion)
     }
     
     /**
@@ -106,10 +105,10 @@ public class Photos {
      - parameter ocmpletion: Called after the video is saved
      
      */
-    public func saveVideo(URL: NSURL, completion: Completion = nil) {
+    open func saveVideo(_ URL: Foundation.URL, completion: Completion = nil) {
         performChanges({ () -> Void in
-            PHAssetChangeRequest.creationRequestForAssetFromVideoAtFileURL(URL)
-            }, completionHandler: completion)
+            PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: URL)
+        }, completionHandler: completion)
     }
     
     /**
@@ -119,13 +118,13 @@ public class Photos {
      - parameter albumName: The name of the album to save to
      
      */
-    public func saveVideoToAlbum(URL: NSURL, albumName: String, completion: Completion) {
+    open func saveVideoToAlbum(_ URL: Foundation.URL, albumName: String, completion: Completion) {
         let assetCollection = createAssetCollection(albumName)
         
         performChanges { () -> Void in
-            let assetRequest = PHAssetChangeRequest.creationRequestForAssetFromVideoAtFileURL(URL)
+            let assetRequest = PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: URL)
             let assetPlaceholder = assetRequest!.placeholderForCreatedAsset
-            let albumRequest = PHAssetCollectionChangeRequest(forAssetCollection: assetCollection!)
+            let albumRequest = PHAssetCollectionChangeRequest(for: assetCollection!)
             let enumeration: NSArray = [assetPlaceholder!]
             albumRequest?.addAssets(enumeration)
             
@@ -139,23 +138,22 @@ public class Photos {
      - parameter contentMode: How the image will fit into the size parameter
      
      */
-    public func latestAsset(size: CGSize, contentMode: PHImageContentMode, completion: ImageCompletion) {
+    open func latestAsset(_ size: CGSize, contentMode: PHImageContentMode, completion: ImageCompletion) {
         let fetchOptions = PHFetchOptions()
         fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
-        let fetchResult = PHAsset.fetchAssetsWithMediaType(PHAssetMediaType.Image, options: fetchOptions)
+        let fetchResult = PHAsset.fetchAssets(with: PHAssetMediaType.image, options: fetchOptions)
         
-        guard let lastAsset = fetchResult.lastObject as? PHAsset else {
+        guard let lastAsset = fetchResult.lastObject else {
             completion?(nil)
             return
         }
         
         let requestOptions = PHImageRequestOptions()
-        requestOptions.version = PHImageRequestOptionsVersion.Current
+        requestOptions.version = PHImageRequestOptionsVersion.current
         
-        PHImageManager.defaultManager().requestImageForAsset(lastAsset, targetSize: size, contentMode: contentMode, options: requestOptions) { (image: UIImage?, dictionary: [NSObject : AnyObject]?) -> Void in
+        PHImageManager.default().requestImage(for: lastAsset, targetSize: size, contentMode: contentMode, options: requestOptions) { (image: UIImage?, dictionary: [AnyHashable: Any]?) -> Void in
             completion?(image)
         }
-        
     }
     
 }

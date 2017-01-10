@@ -19,14 +19,14 @@ public extension UIView {
     - parameter color: The color of the border
 
     */
-    public func applyBorder(width: CGFloat, color: UIColor) {
-        layer.borderColor = color.CGColor
+    public func applyBorder(_ width: CGFloat, color: UIColor) {
+        layer.borderColor = color.cgColor
         layer.borderWidth = width
     }
 
     /// Removes the border from the receiver's underlying CALayer
     public func removeBorder() {
-        layer.borderColor = UIColor.clearColor().CGColor
+        layer.borderColor = UIColor.clear.cgColor
         layer.borderWidth = 0.0
     }
 
@@ -46,7 +46,7 @@ public extension UIView {
     - parameter mask: Whether or not the underlying layer should mask to its bounds
 
     */
-    public func roundCorners(radius: CGFloat, mask: Bool = true) {
+    public func roundCorners(_ radius: CGFloat, mask: Bool = true) {
         layer.cornerRadius = radius
         layer.masksToBounds = mask
     }
@@ -96,9 +96,9 @@ public extension UIView {
     // MARK: Search
 
     /// Returns a superview (by walking up the chain) of type klass
-    public func findSuperview<T: UIView>(klass: UIView.Type) -> T? {
+    public func findSuperview<T: UIView>(_ klass: UIView.Type) -> T? {
         if let s = superview {
-            if s.isKindOfClass(klass) {
+            if s.isKind(of: klass) {
                 return s as? T
             } else {
                 return s.findSuperview(klass)

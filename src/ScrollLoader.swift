@@ -11,43 +11,43 @@ import Foundation
 public protocol ScrollLoaderDelegate: class {
 
     /// Loads data at the requested page
-    func load(loader: ScrollLoader, page: Int)
+    func load(_ loader: ScrollLoader, page: Int)
 
     /// Returns the number of objects currently loaded
-    func count(loader: ScrollLoader) -> Int
+    func count(_ loader: ScrollLoader) -> Int
 
 }
 
-public class ScrollLoader {
+open class ScrollLoader {
 
     // MARK: Types
 
     /// An enum representing the direction of scrolling
     public enum Direction {
-        case Vertical
-        case Horizontal
+        case vertical
+        case horizontal
     }
 
     // MARK: Public Properties
 
     /// The loader's delegate
-    public weak var delegate: ScrollLoaderDelegate!
+    open weak var delegate: ScrollLoaderDelegate!
 
     /// The current page of results
-    public private(set) var page: Int = 0
+    open fileprivate(set) var page: Int = 0
 
     /// The scroll direction
-    public let direction: Direction
+    open let direction: Direction
 
     /// Whether or not the loader is loading
-    public private(set) var loading: Bool = false
+    open fileprivate(set) var loading: Bool = false
 
     /// Whether or not the loader has reached the end of its results
-    public private(set) var ended: Bool = false
+    open fileprivate(set) var ended: Bool = false
 
     // MARK: Private Properties
 
-    private var previousCount: Int = 0
+    fileprivate var previousCount: Int = 0
 
     // MARK: Initialization
 
@@ -65,7 +65,7 @@ public class ScrollLoader {
 
     // MARK: Loading Management
 
-    private func startLoading() {
+    fileprivate func startLoading() {
         loading = true
         previousCount = delegate.count(self)
         delegate?.load(self, page: page)
@@ -77,14 +77,14 @@ public class ScrollLoader {
     - parameter success: Whether or not the request was successful
 
     */
-    public func completeLoading(success: Bool) {
+    open func completeLoading(_ success: Bool) {
 
         loading = false
 
         if success && previousCount == delegate.count(self) {
             ended = true
         } else if success {
-            page++
+            page += 1
         }
 
     }
@@ -92,7 +92,7 @@ public class ScrollLoader {
     // MARK: Control
 
     /// Start the ScrollLoader.  Typically you'd call this in your view controller's -viewDidLoad method
-    public func start() {
+    open func start() {
         startLoading()
     }
 
@@ -104,23 +104,23 @@ public class ScrollLoader {
     - parameter scrollView: The UIScrollView to track
 
     */
-    public func trackScroll(scrollView: UIScrollView) {
+    open func trackScroll(_ scrollView: UIScrollView) {
 
-        var distance = CGFloat.max
-        var dimension = CGFloat.max
+        var distance = CGFloat.greatestFiniteMagnitude
+        var dimension = CGFloat.greatestFiniteMagnitude
 
         switch direction {
-        case .Vertical:
+        case .vertical:
             distance = scrollView.contentSize.height - (scrollView.contentOffset.y + scrollView.height)
             dimension = scrollView.height
-        case .Horizontal:
+        case .horizontal:
             distance = scrollView.contentSize.width - (scrollView.contentOffset.x + scrollView.width)
             dimension = scrollView.width
         }
 
         let threshold = dimension / 2
 
-        if !loading && !ended && distance.floatingPointClass == .PositiveNormal && distance < threshold {
+        if !loading && !ended && distance.floatingPointClass == .positiveNormal && distance < threshold {
             startLoading()
         }
 

@@ -10,14 +10,14 @@ import UIKit
 
 private class ControlHandler {
 
-    private let handler: (sender: UIControl) -> ()
+    fileprivate let handler: (_ sender: UIControl) -> ()
 
-    private init(handler: (sender: UIControl) -> ()) {
+    fileprivate init(handler: @escaping (_ sender: UIControl) -> ()) {
         self.handler = handler
     }
 
-    private dynamic func call(sender: UIControl) {
-        handler(sender: sender)
+    fileprivate dynamic func call(_ sender: UIControl) {
+        handler(sender)
     }
 
 }
@@ -32,24 +32,24 @@ Binds a closure to a UIControl's events
 - parameter handler: A closure that will fire when the events are triggered
 
 */
-public func addHandler<T: UIControl, U: AnyObject>(control: T, events: UIControlEvents, target: U, handler: (target: U) -> ((sender: T) -> ())) {
+public func addHandler<T: UIControl, U: AnyObject>(_ control: T, events: UIControlEvents, target: U, handler: @escaping (_ target: U) -> ((_ sender: T) -> ())) {
 
     let newClosure = { [weak target] (sender: UIControl) -> Void in
-        if let t = target, theSender = sender as? T {
-            let h1 = handler(target: t)
-            h1(sender: theSender)
+        if let t = target, let theSender = sender as? T {
+            let h1 = handler(t)
+            h1(theSender)
         }
     }
 
     let controlHandler = ControlHandler(handler: newClosure)
 
     let raw = events.rawValue
-    let fakePointer = UnsafePointer<Void>(bitPattern: raw)
+    let fakePointer = UnsafeRawPointer(bitPattern: raw)
 
     let object: UIControl = control
 
     objc_setAssociatedObject(object, fakePointer, controlHandler, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
 
-    control.addTarget(controlHandler, action: "call:", forControlEvents: events)
+    control.addTarget(controlHandler, action: #selector(ControlHandler.call(_:)), for: events)
 
 }

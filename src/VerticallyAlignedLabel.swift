@@ -13,46 +13,46 @@ A text label that can be set to Top, Middle, or Bottom alignment.
 This class will not truncate text.
 
 */
-public class VerticallyAlignedLabel: UILabel {
+open class VerticallyAlignedLabel: UILabel {
 
     /// Where the text posisitions itself vertically in the view.
     public enum VerticalAlignment {
-        case Top, Middle, Bottom
+        case top, middle, bottom
     }
 
     /// Where the text positions itself.
-    public var verticalAlignment = VerticalAlignment.Middle {
+    open var verticalAlignment = VerticalAlignment.middle {
         didSet {
             setNeedsDisplay()
         }
     }
 
-    override public func drawTextInRect(rect: CGRect) {
+    override open func drawText(in rect: CGRect) {
         if let stringText = text {
             
             let stringTextAsNSString = stringText as NSString
             
-            let labelStringSize = stringTextAsNSString.boundingRectWithSize(CGSize(frame.width, CGFloat.max),
-                options: NSStringDrawingOptions.UsesLineFragmentOrigin,
+            let labelStringSize = stringTextAsNSString.boundingRect(with: CGSize(frame.width, CGFloat.greatestFiniteMagnitude),
+                options: NSStringDrawingOptions.usesLineFragmentOrigin,
                 attributes: [NSFontAttributeName: font],
                 context: nil).size
 
             switch verticalAlignment {
-            case .Top:
-                super.drawTextInRect(CGRect(0, 0, frame.width, ceil(labelStringSize.height)))
+            case .top:
+                super.drawText(in: CGRect(0, 0, frame.width, ceil(labelStringSize.height)))
                 break
-            case .Middle:
+            case .middle:
                 let textHeight = ceil(labelStringSize.height)
-                super.drawTextInRect(CGRect(0, (frame.height - textHeight) / 2, frame.width, textHeight))
+                super.drawText(in: CGRect(0, (frame.height - textHeight) / 2, frame.width, textHeight))
                 break
-            case .Bottom:
+            case .bottom:
                 let textHeight = ceil(labelStringSize.height)
-                super.drawTextInRect(CGRect(0, frame.height - textHeight, frame.width, textHeight))
+                super.drawText(in: CGRect(0, frame.height - textHeight, frame.width, textHeight))
                 break
             }
 
         } else {
-            super.drawTextInRect(rect)
+            super.drawText(in: rect)
         }
     }
 }

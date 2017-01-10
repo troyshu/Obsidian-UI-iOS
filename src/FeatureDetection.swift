@@ -9,7 +9,7 @@
 import Foundation
 import AVFoundation
 
-public class FeatureDetection {
+open class FeatureDetection {
 
     /**
     Detects faces.
@@ -17,7 +17,7 @@ public class FeatureDetection {
     - returns: An array of detected faces.
 
     */
-    public func detectFacesInImage(image: CIImage) -> [CIFaceFeature] {
+    open func detectFacesInImage(_ image: CIImage) -> [CIFaceFeature] {
         let features = detectFeaturesInImage(image)
         var faces = [CIFaceFeature]()
         for feature in features {
@@ -35,8 +35,8 @@ public class FeatureDetection {
     - returns: An array of detected faces.
 
     */
-    public func detectFacesInImage(image: UIImage) -> [CIFaceFeature] {
-        return detectFacesInImage(image.CIImage!)
+    open func detectFacesInImage(_ image: UIImage) -> [CIFaceFeature] {
+        return detectFacesInImage(image.ciImage!)
     }
 
     /**
@@ -45,9 +45,9 @@ public class FeatureDetection {
     - returns: An array of detected features.
 
     */
-    public func detectFeaturesInImage(image: CIImage) -> [CIFeature] {
+    open func detectFeaturesInImage(_ image: CIImage) -> [CIFeature] {
         let detector = CIDetector(ofType: CIDetectorTypeFace, context: nil, options: [CIDetectorAccuracy : CIDetectorAccuracyLow, CIDetectorTracking : true])
-        return detector.featuresInImage(image)
+        return detector!.features(in: image)
     }
 
     /**
@@ -56,8 +56,8 @@ public class FeatureDetection {
     - returns: An array of detected features.
 
     */
-    public func detectFeaturesInImage(image: UIImage) -> [CIFeature] {
-        return detectFeaturesInImage(image.CIImage!)
+    open func detectFeaturesInImage(_ image: UIImage) -> [CIFeature] {
+        return detectFeaturesInImage(image.ciImage!)
     }
 
     /**
@@ -77,7 +77,7 @@ public class FeatureDetection {
     - parameter mirrored: Is the video from the camera horizontally flipped for the preview.
 
     */
-    public func rectsForFeatures(features: [CIFeature], previewLayer: AVCaptureVideoPreviewLayer, cleanAperture: CGRect, mirrored: Bool) -> [CGRect] {
+    open func rectsForFeatures(_ features: [CIFeature], previewLayer: AVCaptureVideoPreviewLayer, cleanAperture: CGRect, mirrored: Bool) -> [CGRect] {
         var featureRects = [CGRect]()
         for feature in features {
             featureRects.append(rectForFeature(feature, previewLayer: previewLayer, cleanAperture: cleanAperture, mirrored: mirrored))
@@ -102,11 +102,11 @@ public class FeatureDetection {
     - parameter mirrored: Is the video from the camera horizontally flipped for the preview.
 
     */
-    public func rectForFeature(feature: CIFeature, previewLayer: AVCaptureVideoPreviewLayer, cleanAperture: CGRect, mirrored: Bool) -> CGRect {
+    open func rectForFeature(_ feature: CIFeature, previewLayer: AVCaptureVideoPreviewLayer, cleanAperture: CGRect, mirrored: Bool) -> CGRect {
         return locationOfFaceInView(feature.bounds, gravity: previewLayer.videoGravity, previewFrame: previewLayer.frame, cleanAperture: cleanAperture, mirrored: mirrored)
     }
 
-    private func locationOfFaceInView(featureBounds: CGRect, gravity: String, previewFrame: CGRect, cleanAperture: CGRect, mirrored: Bool) -> CGRect {
+    fileprivate func locationOfFaceInView(_ featureBounds: CGRect, gravity: String, previewFrame: CGRect, cleanAperture: CGRect, mirrored: Bool) -> CGRect {
         let parentFrameSize = previewFrame.size
         let cleanApertureSize = cleanAperture.size
         // find where the video box is positioned within the preview layer based on the video size and gravity
@@ -133,15 +133,15 @@ public class FeatureDetection {
         faceRect.origin.y *= heightScaleBy
 
         if mirrored {
-            faceRect = CGRectOffset(faceRect, previewBox.origin.x + previewBox.size.width - faceRect.size.width - (faceRect.origin.x * 2), previewBox.origin.y)
+            faceRect = faceRect.offsetBy(dx: previewBox.origin.x + previewBox.size.width - faceRect.size.width - (faceRect.origin.x * 2), dy: previewBox.origin.y)
         } else {
-            faceRect = CGRectOffset(faceRect, previewBox.origin.x, previewBox.origin.y)
+            faceRect = faceRect.offsetBy(dx: previewBox.origin.x, dy: previewBox.origin.y)
         }
 
         return faceRect
     }
 
-    private func videoPreviewBox(gravity gravity: String, frameSize: CGSize, apertureSize: CGSize) -> CGRect {
+    fileprivate func videoPreviewBox(gravity: String, frameSize: CGSize, apertureSize: CGSize) -> CGRect {
         let apertureRatio = apertureSize.height / apertureSize.width
         let viewRatio = frameSize.width / frameSize.height
 

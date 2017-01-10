@@ -18,10 +18,10 @@ public extension UICollectionView {
     - parameter name: The name of the .nib file, which will also be used as the cell's reuse identifier
 
     */
-    public func registerCellNib(name: String) {
-        let nib = NibCache[name] ?? UINib(nibName: name, bundle: NSBundle.mainBundle())
+    public func registerCellNib(_ name: String) {
+        let nib = NibCache[name] ?? UINib(nibName: name, bundle: Bundle.main)
         NibCache[name] = nib
-        registerNib(nib, forCellWithReuseIdentifier: name)
+        register(nib, forCellWithReuseIdentifier: name)
     }
 
     /**
@@ -30,10 +30,10 @@ public extension UICollectionView {
     - parameter name: The name of the .nib file, which will also be used as the header's reuse identifier
 
     */
-    public func registerSectionHeaderNib(name: String) {
-        let nib = NibCache[name] ?? UINib(nibName: name, bundle: NSBundle.mainBundle())
+    public func registerSectionHeaderNib(_ name: String) {
+        let nib = NibCache[name] ?? UINib(nibName: name, bundle: Bundle.main)
         NibCache[name] = nib
-        registerNib(nib, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: name)
+        register(nib, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: name)
     }
 
     /**
@@ -42,10 +42,10 @@ public extension UICollectionView {
     - parameter name: The name of the .nib file, which will also be used as the footer's reuse identifier
 
     */
-    public func registerSectionFooterNib(name: String) {
-        let nib = NibCache[name] ?? UINib(nibName: name, bundle: NSBundle.mainBundle())
+    public func registerSectionFooterNib(_ name: String) {
+        let nib = NibCache[name] ?? UINib(nibName: name, bundle: Bundle.main)
         NibCache[name] = nib
-        registerNib(nib, forSupplementaryViewOfKind: UICollectionElementKindSectionFooter, withReuseIdentifier: name)
+        register(nib, forSupplementaryViewOfKind: UICollectionElementKindSectionFooter, withReuseIdentifier: name)
     }
 
 
@@ -58,16 +58,16 @@ public extension UICollectionView {
     - parameter sections: The sections to reload
 
     */
-    public func refreshSections(animated: Bool = false, _ sections: [Int]) {
+    public func refreshSections(_ animated: Bool = false, _ sections: [Int]) {
 
         let indexSet = NSMutableIndexSet()
 
         for index in sections {
-            indexSet.addIndex(index)
+            indexSet.add(index)
         }
 
         let animations = {
-            self.reloadSections(indexSet)
+            self.reloadSections(indexSet as IndexSet)
         }
 
         if animated {
@@ -83,13 +83,13 @@ public extension UICollectionView {
     /// The cell with the greatest visible area
     var mostVisibleCell: UICollectionViewCell? {
 
-        let visibleIndexPaths = self.indexPathsForVisibleItems()
-        let attributes = visibleIndexPaths.map({ self.collectionViewLayout.layoutAttributesForItemAtIndexPath($0) }).filter({ $0 != nil }).map({ $0! })
+        let visibleIndexPaths = self.indexPathsForVisibleItems
+        let attributes = visibleIndexPaths.map({ self.collectionViewLayout.layoutAttributesForItem(at: $0) }).filter({ $0 != nil }).map({ $0! })
         let deltas = attributes.map({ $0.frame.origin.distance(fromPoint: self.contentOffset) })
 
         if !visibleIndexPaths.isEmpty {
-            if let i = deltas.indexOf(deltas.minElement()!) {
-                return cellForItemAtIndexPath(visibleIndexPaths[i])
+            if let i = deltas.index(of: deltas.min()!) {
+                return cellForItem(at: visibleIndexPaths[i])
             }
         }
 
@@ -97,9 +97,9 @@ public extension UICollectionView {
     }
 
     /// The index path of the cell with the greatest visible area
-    var mostVisibleIndexPath: NSIndexPath? {
+    var mostVisibleIndexPath: IndexPath? {
         if let cell = mostVisibleCell {
-            return indexPathForCell(cell)
+            return indexPath(for: cell)
         }
         return nil
     }

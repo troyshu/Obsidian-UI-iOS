@@ -18,10 +18,10 @@ extension UITableView {
     - parameter name: The name of the .nib file, which will also be used as the cell's reuse identifier
 
     */
-    public func registerCellNib(name: String) {
-        let nib = NibCache[name] ?? UINib(nibName: name, bundle: NSBundle.mainBundle())
+    public func registerCellNib(_ name: String) {
+        let nib = NibCache[name] ?? UINib(nibName: name, bundle: Bundle.main)
         NibCache[name] = nib
-        registerNib(nib, forCellReuseIdentifier: name)
+        register(nib, forCellReuseIdentifier: name)
     }
 
     /// Adds an empty footer view.  This has the effect of hiding extra cell separators.
@@ -40,17 +40,17 @@ extension UITableView {
     - parameter sections: The sections to reload
 
     */
-    public func refreshSections(animated: Bool = false, _ sections: [Int]) {
+    public func refreshSections(_ animated: Bool = false, _ sections: [Int]) {
 
         let indexSet = NSMutableIndexSet()
 
         for index in sections {
-            indexSet.addIndex(index)
+            indexSet.add(index)
         }
 
         let animations = { () -> () in
-            let animation: UITableViewRowAnimation = animated ? .Automatic : .None
-            self.reloadSections(indexSet, withRowAnimation: animation)
+            let animation: UITableViewRowAnimation = animated ? .automatic : .none
+            self.reloadSections(indexSet as IndexSet, with: animation)
         }
 
         if animated {

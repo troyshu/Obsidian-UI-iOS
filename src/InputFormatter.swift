@@ -11,40 +11,40 @@ import Foundation
 /// Formatting style options
 public enum InputFormattingType {
     /// Use with custom validation
-    case None
+    case none
     /// e.g. $00.00. Valid with any value greater than $0.
-    case DollarAmount
+    case dollarAmount
     /// e.g. 00/00/0000
-    case Date
+    case date
     /// e.g. 00/00
-    case CreditCardExpirationDate
+    case creditCardExpirationDate
     /// e.g. 0000 0000 0000 0000 - VISA/MASTERCARD
-    case CreditCardSixteenDigits
+    case creditCardSixteenDigits
     /// e.g. 0000 000000 00000 - AMEX
-    case CreditCardFifteenDigits
+    case creditCardFifteenDigits
     /// e.g. 000
-    case CreditCardCVVThreeDigits
+    case creditCardCVVThreeDigits
     /// e.g. 0000
-    case CreditCardCVVFourDigits
+    case creditCardCVVFourDigits
     /// Allows any characters. Limits the character count and valid only when at limit
-    case LimitNumberOfCharacters(Int)
+    case limitNumberOfCharacters(Int)
     /// Limits the count of numbers entered. Valid only at set limit
-    case LimitNumberOfDigits(Int)
+    case limitNumberOfDigits(Int)
     /// Only allows characters from the NSCharacterSet to be entered
-    case LimitToCharacterSet(NSCharacterSet)
+    case limitToCharacterSet(CharacterSet)
     /// Any input with more than zero characters
-    case AnyLength
+    case anyLength
 }
 
 class InputFormatter {
 
-    typealias inputTextFormatter = ((text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int))?
-    typealias validChecker = ((input: String) -> Bool)?
-    var formattingType = InputFormattingType.None
+    typealias inputTextFormatter = ((_ text: String, _ newInput: String, _ range: NSRange, _ cursorPosition: Int) -> (String, Int))?
+    typealias validChecker = ((_ input: String) -> Bool)?
+    var formattingType = InputFormattingType.none
 
-    private lazy var numberFormatter = NSNumberFormatter()
-    private lazy var currencyFormatter = NSNumberFormatter()
-    private lazy var dateFormatter = NSDateFormatter()
+    fileprivate lazy var numberFormatter = NumberFormatter()
+    fileprivate lazy var currencyFormatter = NumberFormatter()
+    fileprivate lazy var dateFormatter = DateFormatter()
 
     init(type: InputFormattingType) {
         formattingType = type
@@ -52,65 +52,65 @@ class InputFormatter {
 
     var textFormatter: inputTextFormatter {
         switch self.formattingType {
-        case .None:
+        case .none:
             return nil
-        case .DollarAmount:
+        case .dollarAmount:
             return formatCurrency
-        case .Date:
+        case .date:
             return formatDate
-        case .CreditCardExpirationDate:
+        case .creditCardExpirationDate:
             return formatCreditCardExpirationDate
-        case .CreditCardSixteenDigits:
+        case .creditCardSixteenDigits:
             return formatCreditCardSixteenDigits
-        case .CreditCardFifteenDigits:
+        case .creditCardFifteenDigits:
             return formatCreditCardFifteenDigits
-        case .CreditCardCVVThreeDigits:
+        case .creditCardCVVThreeDigits:
             return formatCreditCardCVVThreeDigits
-        case .CreditCardCVVFourDigits:
+        case .creditCardCVVFourDigits:
             return formatCreditCardCVVFourDigits
-        case .LimitNumberOfCharacters(let length):
+        case .limitNumberOfCharacters(let length):
             return limitToLength(length)
-        case .LimitNumberOfDigits(let length):
+        case .limitNumberOfDigits(let length):
             return limitToDigitsWithLength(length)
-        case .LimitToCharacterSet(let characterSet):
+        case .limitToCharacterSet(let characterSet):
             return limitToCharacterSet(characterSet)
-        case .AnyLength:
+        case .anyLength:
             return nil
         }
     }
 
     var validityChecker: validChecker {
         switch self.formattingType {
-        case .None:
+        case .none:
             return nil
-        case .DollarAmount:
+        case .dollarAmount:
             return validateCurrency
-        case .Date:
+        case .date:
             return isLength(10)
-        case .CreditCardExpirationDate:
+        case .creditCardExpirationDate:
             return isLength(5)
-        case .CreditCardSixteenDigits:
+        case .creditCardSixteenDigits:
             return isLength(19)
-        case .CreditCardFifteenDigits:
+        case .creditCardFifteenDigits:
             return isLength(17)
-        case .CreditCardCVVThreeDigits:
+        case .creditCardCVVThreeDigits:
             return isLength(3)
-        case .CreditCardCVVFourDigits:
+        case .creditCardCVVFourDigits:
             return isLength(4)
-        case .LimitNumberOfCharacters(let numberOfCharacters):
+        case .limitNumberOfCharacters(let numberOfCharacters):
             return isLength(numberOfCharacters)
-        case .LimitNumberOfDigits(let length):
+        case .limitNumberOfDigits(let length):
             return isLength(length)
-        case .LimitToCharacterSet:
+        case .limitToCharacterSet:
             return nil
-        case .AnyLength:
+        case .anyLength:
             return hasLength
         }
     }
 
     // MARK:- Formatters
 
-    private func formatCurrency(text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
+    fileprivate func formatCurrency(_ text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
         if newInput != "" {
             guard isDigit(Character(newInput)) && text.length < 21 else {
                 return (text, cursorPosition)
@@ -121,17 +121,17 @@ class InputFormatter {
         let removedCharsCorrectedRange = NSRange(location: range.location + (newCursorPosition - cursorPosition), length: range.length)
         let (newText, _) = resultingString(noSpecialsString, newInput: newInput, range: removedCharsCorrectedRange, cursorPosition: newCursorPosition)
 
-        currencyFormatter.numberStyle = .DecimalStyle
-        let number = currencyFormatter.numberFromString(newText) ?? 0
-        let newValue = NSNumber(double: number.doubleValue / 100.0)
-        currencyFormatter.numberStyle = .CurrencyStyle
-        if let currencyString = currencyFormatter.stringFromNumber(newValue) {
+        currencyFormatter.numberStyle = .decimal
+        let number = currencyFormatter.number(from: newText) ?? 0
+        let newValue = NSNumber(value: number.doubleValue / 100.0 as Double)
+        currencyFormatter.numberStyle = .currency
+        if let currencyString = currencyFormatter.string(from: newValue) {
             return (currencyString, cursorPosition + (currencyString.length - text.length))
         }
         return (text, cursorPosition)
     }
 
-    private func formatDate(text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
+    fileprivate func formatDate(_ text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
         if newInput != "" {
             guard isDigit(Character(newInput)) && text.length < 10 else {
                 return (text, cursorPosition)
@@ -141,7 +141,7 @@ class InputFormatter {
         return removeNonDigitsAndAddCharacters(text, newInput: newInput, range: range, cursorPosition: cursorPosition, characters: [(2, "\\"), (4, "\\")])
     }
 
-    private func formatCreditCardExpirationDate(text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
+    fileprivate func formatCreditCardExpirationDate(_ text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
         if newInput != "" {
             guard isDigit(Character(newInput)) && text.length < 5 else {
                 return (text, cursorPosition)
@@ -151,7 +151,7 @@ class InputFormatter {
         return removeNonDigitsAndAddCharacters(text, newInput: newInput, range: range, cursorPosition: cursorPosition, characters: [(2, "\\")])
     }
 
-    private func formatCreditCardSixteenDigits(text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
+    fileprivate func formatCreditCardSixteenDigits(_ text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
         if newInput != "" {
             guard isDigit(Character(newInput)) && text.length < 19 else {
                 return (text, cursorPosition)
@@ -161,7 +161,7 @@ class InputFormatter {
         return removeNonDigitsAndAddCharacters(text, newInput: newInput, range: range, cursorPosition: cursorPosition, characters: [(4, " "), (8, " "), (12, " ")])
     }
 
-    private func formatCreditCardFifteenDigits(text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
+    fileprivate func formatCreditCardFifteenDigits(_ text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
         if newInput != "" {
             guard isDigit(Character(newInput)) && text.length < 17 else {
                 return (text, cursorPosition)
@@ -171,15 +171,15 @@ class InputFormatter {
         return removeNonDigitsAndAddCharacters(text, newInput: newInput, range: range, cursorPosition: cursorPosition, characters: [(4, " "), (10, " ")])
     }
 
-    private func formatCreditCardCVVThreeDigits(text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
+    fileprivate func formatCreditCardCVVThreeDigits(_ text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
         return limitToDigitsAndLength(3, text: text, newInput: newInput, range: range, cursorPosition: cursorPosition)
     }
 
-    private func formatCreditCardCVVFourDigits(text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
+    fileprivate func formatCreditCardCVVFourDigits(_ text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
         return limitToDigitsAndLength(4, text: text, newInput: newInput, range: range, cursorPosition: cursorPosition)
     }
 
-    private func limitToDigitsAndLength(length: Int, text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
+    fileprivate func limitToDigitsAndLength(_ length: Int, text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
         if newInput != "" {
             if text.length == length {
                 return (text, cursorPosition)
@@ -191,9 +191,9 @@ class InputFormatter {
         return resultingString(text, newInput: newInput, range: range, cursorPosition: cursorPosition)
     }
 
-    private func limitToLength(limit: Int) -> ((text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int)) {
+    fileprivate func limitToLength(_ limit: Int) -> ((_ text: String, _ newInput: String, _ range: NSRange, _ cursorPosition: Int) -> (String, Int)) {
 
-        func limitText(text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
+        func limitText(_ text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
             if text.length == limit && newInput != "" {
                 return (text, cursorPosition)
             }
@@ -203,9 +203,9 @@ class InputFormatter {
         return limitText
     }
 
-    private func limitToDigitsWithLength(limit: Int) -> ((text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int)) {
+    fileprivate func limitToDigitsWithLength(_ limit: Int) -> ((_ text: String, _ newInput: String, _ range: NSRange, _ cursorPosition: Int) -> (String, Int)) {
 
-        func limitText(text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
+        func limitText(_ text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
             if newInput != "" {
                 guard isDigit(Character(newInput)) && text.length < limit else {
                     return (text, cursorPosition)
@@ -218,11 +218,11 @@ class InputFormatter {
         return limitText
     }
 
-    private func limitToCharacterSet(set: NSCharacterSet) -> ((text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int)) {
+    fileprivate func limitToCharacterSet(_ set: CharacterSet) -> ((_ text: String, _ newInput: String, _ range: NSRange, _ cursorPosition: Int) -> (String, Int)) {
 
-        func limitToSet(text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
+        func limitToSet(_ text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
             if newInput != "" {
-                guard newInput.rangeOfCharacterFromSet(set) != nil else {
+                guard newInput.rangeOfCharacter(from: set) != nil else {
                     return (text, cursorPosition)
                 }
             }
@@ -235,96 +235,96 @@ class InputFormatter {
 
     // MARK: Validators
 
-    private func validateCurrency(text: String) -> Bool {
-        currencyFormatter.numberStyle = .CurrencyStyle
-        let number = currencyFormatter.numberFromString(text) ?? 0
+    fileprivate func validateCurrency(_ text: String) -> Bool {
+        currencyFormatter.numberStyle = .currency
+        let number = currencyFormatter.number(from: text) ?? 0
 
         return number.doubleValue > 0.0
     }
 
-    private func isLength(length: Int) -> ((text: String) -> Bool) {
+    fileprivate func isLength(_ length: Int) -> ((_ text: String) -> Bool) {
 
-        func checkLength(text: String) -> Bool {
+        func checkLength(_ text: String) -> Bool {
             return text.length == length
         }
 
         return checkLength
     }
 
-    private func hasLength(text: String) -> Bool {
+    fileprivate func hasLength(_ text: String) -> Bool {
         return text.length > 0
     }
 
     // MARK:- Characters
 
-    private func isDigit(character: Character) -> Bool {
+    fileprivate func isDigit(_ character: Character) -> Bool {
         return isDigitOrCharacter("", character: character)
     }
 
-    private func isDigitOrCharacter(additionalCharacters: String, character: Character) -> Bool {
-        let digits = NSCharacterSet.decimalDigitCharacterSet()
-        let fullSet = NSMutableCharacterSet(charactersInString: additionalCharacters)
-        fullSet.formUnionWithCharacterSet(digits)
+    fileprivate func isDigitOrCharacter(_ additionalCharacters: String, character: Character) -> Bool {
+        let digits = CharacterSet.decimalDigits
+        let fullSet = NSMutableCharacterSet(charactersIn: additionalCharacters)
+        fullSet.formUnion(with: digits)
 
-        if isCharacter(character, aMemberOf: fullSet) {
+        if isCharacter(character, aMemberOf: fullSet as CharacterSet) {
             return true
         }
         return false
     }
 
-    func resultingString(text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
+    func resultingString(_ text: String, newInput: String, range: NSRange, cursorPosition: Int) -> (String, Int) {
         guard range.location >= 0 else {
             return (text, cursorPosition)
         }
 
-        let newText = (text as NSString).stringByReplacingCharactersInRange(range, withString: newInput)
+        let newText = (text as NSString).replacingCharacters(in: range, with: newInput)
         return (newText, cursorPosition + (newText.length - text.length))
     }
 
-    private func removeNonDigits(text: String, cursorPosition: Int) -> (String, Int) {
+    fileprivate func removeNonDigits(_ text: String, cursorPosition: Int) -> (String, Int) {
         var originalCursorPosition = cursorPosition
         let theText = text
         var digitsOnlyString = ""
-        for var i = 0; i < theText.length; i++ {
+        for i in 0 ..< theText.length {
             let characterToAdd = theText[i]
             if isDigit(characterToAdd) {
                 let stringToAdd = String(characterToAdd)
-                digitsOnlyString.appendContentsOf(stringToAdd)
+                digitsOnlyString.append(stringToAdd)
             } else if i < cursorPosition {
-                originalCursorPosition--
+                originalCursorPosition -= 1
             }
         }
 
         return (digitsOnlyString, originalCursorPosition)
     }
 
-    func insertCharactersAtIndexes(text: String, characters: [(Int, Character)], cursorPosition: Int) -> (String, Int) {
+    func insertCharactersAtIndexes(_ text: String, characters: [(Int, Character)], cursorPosition: Int) -> (String, Int) {
         var stringWithAddedChars = ""
         var newCursorPosition = cursorPosition
 
-        for var i = 0; i < text.length; i++ {
+        for i in 0 ..< text.length {
             for (index, char) in characters {
                 if index == i {
                     stringWithAddedChars.append(char)
                     if i < cursorPosition {
-                        newCursorPosition++
+                        newCursorPosition += 1
                     }
                 }
             }
 
             let characterToAdd = text[i]
             let stringToAdd = String(characterToAdd)
-            stringWithAddedChars.appendContentsOf(stringToAdd)
+            stringWithAddedChars.append(stringToAdd)
         }
 
         return (stringWithAddedChars, newCursorPosition)
     }
 
-    func isCharacter(c: Character, aMemberOf set: NSCharacterSet) -> Bool {
-        return set.characterIsMember(String(c).utf16.first!)
+    func isCharacter(_ c: Character, aMemberOf set: CharacterSet) -> Bool {
+        return set.contains(UnicodeScalar(String(c).utf16.first!)!)
     }
 
-    private func removeNonDigitsAndAddCharacters(text: String, newInput: String, range: NSRange, cursorPosition: Int, characters: [(Int, Character)]) -> (String, Int) {
+    fileprivate func removeNonDigitsAndAddCharacters(_ text: String, newInput: String, range: NSRange, cursorPosition: Int, characters: [(Int, Character)]) -> (String, Int) {
         let (onlyDigitsText, cursorPos) = removeNonDigits(text, cursorPosition: cursorPosition)
         let correctedRange = NSRange(location: range.location + (cursorPos - cursorPosition), length: range.length)
         let (newText, cursorAfterEdit) = resultingString(onlyDigitsText, newInput: newInput, range: correctedRange, cursorPosition: cursorPos)

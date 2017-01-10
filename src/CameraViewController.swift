@@ -14,10 +14,10 @@ import MobileCoreServices
 protocol ALFCameraViewControllerDelegate {
 
     /// Tells the delegate that the close button was tapped.
-    func didCancelImageCapture(cameraController: ALFCameraViewController)
+    func didCancelImageCapture(_ cameraController: ALFCameraViewController)
 
     /// Tells the delegate that an image has been selected.
-    func cameraControllerDidSelectImage(camera: ALFCameraViewController, image: UIImage)
+    func cameraControllerDidSelectImage(_ camera: ALFCameraViewController, image: UIImage)
 }
 
 /**
@@ -36,7 +36,7 @@ class ALFCameraViewController: UIViewController, UIImagePickerControllerDelegate
      */
     var delegate: ALFCameraViewControllerDelegate?
 
-    private var camera: Camera
+    fileprivate var camera: Camera
 
     ///Flash firing control. false by defualt.
     var flashOn = false
@@ -48,7 +48,7 @@ class ALFCameraViewController: UIViewController, UIImagePickerControllerDelegate
     var savesToPhotoLibrary = false
 
     /// The tint color of the photo library picker's navigation bar
-    var pickerNavigationBarTintColor = UIColor.whiteColor()
+    var pickerNavigationBarTintColor = UIColor.white
 
     /// The button that is pressed to capture an image.
     @IBOutlet weak var captureButton: UIButton?
@@ -63,7 +63,7 @@ class ALFCameraViewController: UIViewController, UIImagePickerControllerDelegate
     @IBOutlet weak var flashView: UIView?
 
     /// View for image review post image capture
-    @IBOutlet weak private var capturedImageReview: UIImageView?
+    @IBOutlet weak fileprivate var capturedImageReview: UIImageView?
 
     /// User taps this to pass photo to delegate
     @IBOutlet weak var acceptButton: UIButton?
@@ -87,8 +87,8 @@ class ALFCameraViewController: UIViewController, UIImagePickerControllerDelegate
     /// Opens the photo library
     @IBOutlet weak var photoLibraryButton: UIButton?
 
-    private var capturedImage: UIImage?
-    private var inputCameraConnection: AVCaptureConnection?
+    fileprivate var capturedImage: UIImage?
+    fileprivate var inputCameraConnection: AVCaptureConnection?
 
     init(useFrontCamera: Bool) {
         camera = Camera(useFrontCamera: useFrontCamera, sessionPreset: sessionPreset)
@@ -103,134 +103,134 @@ class ALFCameraViewController: UIViewController, UIImagePickerControllerDelegate
         super.viewDidLoad()
     }
 
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        UIApplication.sharedApplication().statusBarHidden = true
-        flashButton?.hidden = true
+        UIApplication.shared.isStatusBarHidden = true
+        flashButton?.isHidden = true
     }
 
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
     }
 
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        UIApplication.sharedApplication().statusBarHidden = false
+        UIApplication.shared.isStatusBarHidden = false
         teardownSession()
     }
 
-    override func prefersStatusBarHidden() -> Bool {
+    override var prefersStatusBarHidden : Bool {
         return true
     }
 
-    private func teardownSession() {
+    fileprivate func teardownSession() {
         camera.tearDownSession()
     }
 
     // MARK: Actions
 
-    private func showAcceptOrRejectView(show: Bool) {
-        UIView.animateWithDuration(1, animations: { () -> Void in
-            self.captureButton?.hidden = show
-            self.flashButton?.hidden = show
-            self.cameraPreview?.hidden = show
+    fileprivate func showAcceptOrRejectView(_ show: Bool) {
+        UIView.animate(withDuration: 1, animations: { () -> Void in
+            self.captureButton?.isHidden = show
+            self.flashButton?.isHidden = show
+            self.cameraPreview?.isHidden = show
 
-            self.capturedImageReview?.hidden = !show
-            self.acceptButton?.hidden = !show
-            self.rejectButton?.hidden = !show
+            self.capturedImageReview?.isHidden = !show
+            self.acceptButton?.isHidden = !show
+            self.rejectButton?.isHidden = !show
         })
     }
 
-    private func didPressAcceptPhotoButton() {
+    fileprivate func didPressAcceptPhotoButton() {
         delegate?.cameraControllerDidSelectImage(self, image: capturedImage!)
         teardownSession()
     }
 
-    private func didPressRejectPhotoButton() {
+    fileprivate func didPressRejectPhotoButton() {
         capturedImage = nil
         showAcceptOrRejectView(false)
     }
 
-    private func didPressExitButton() {
+    fileprivate func didPressExitButton() {
         delegate?.didCancelImageCapture(self)
         teardownSession()
     }
 
-    private func takePicture() {
+    fileprivate func takePicture() {
         camera.captureImage { (capturedImage) -> Void in
             self.displayCapturedImage(capturedImage)
         }
     }
 
-    private func displayCapturedImage(image: UIImage) {
+    fileprivate func displayCapturedImage(_ image: UIImage) {
         capturedImageReview?.image = image
         showAcceptOrRejectView(true)
     }
 
-    private func flashCamera() {
+    fileprivate func flashCamera() {
         let key = "opacity"
         let flash = CABasicAnimation(keyPath: key)
         flash.fromValue = 0
         flash.toValue = 1
         flash.autoreverses = true
-        flash.removedOnCompletion = true
+        flash.isRemovedOnCompletion = true
         flash.duration = 0.15
-        flashView?.layer.addAnimation(flash, forKey: key)
+        flashView?.layer.add(flash, forKey: key)
     }
 
     // MARK: Photo Library
 
-    private func didTapPhotoLibraryButton() {
+    fileprivate func didTapPhotoLibraryButton() {
         presentPhotoLibraryPicker()
     }
 
-    private func loadPhotoLibraryPreviewImage() {
+    fileprivate func loadPhotoLibraryPreviewImage() {
         if let libraryButton = photoLibraryButton {
-            Photos().latestAsset(libraryButton.frame.size, contentMode: .AspectFill, completion: { (image: UIImage?) -> Void in
+            Photos().latestAsset(libraryButton.frame.size, contentMode: .aspectFill, completion: { (image: UIImage?) -> Void in
                 libraryButton.imageView?.image = image
             })
         }
     }
 
-    private func configurePhotoLibraryButtonForNoAccess() {
-        photoLibraryButton?.backgroundColor = UIColor.blackColor()
+    fileprivate func configurePhotoLibraryButtonForNoAccess() {
+        photoLibraryButton?.backgroundColor = UIColor.black
     }
 
-    private func presentPhotoLibraryPicker() {
+    fileprivate func presentPhotoLibraryPicker() {
         let imagePicker = UIImagePickerController()
-        imagePicker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+        imagePicker.sourceType = UIImagePickerControllerSourceType.photoLibrary
         // let availableTypes = UIImagePickerController.availableMediaTypesForSourceType(imagePicker.sourceType)
         imagePicker.mediaTypes = [kUTTypeImage as String]
         imagePicker.delegate = self
-        imagePicker.modalPresentationStyle = UIModalPresentationStyle.FullScreen
-        imagePicker.modalTransitionStyle = UIModalTransitionStyle.CoverVertical
+        imagePicker.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+        imagePicker.modalTransitionStyle = UIModalTransitionStyle.coverVertical
         imagePicker.navigationBar.barTintColor = pickerNavigationBarTintColor
-        imagePicker.navigationBar.translucent = false
+        imagePicker.navigationBar.isTranslucent = false
 
-        presentViewController(imagePicker, animated: true, completion: nil)
+        self.present(imagePicker, animated: true, completion: nil)
     }
 
     // MARK: Image Picker Delegate
 
-    func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage!, editingInfo: [NSObject : AnyObject]!) {
-        dismissViewControllerAnimated(true, completion: { () -> Void in
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingImage image: UIImage!, editingInfo: [AnyHashable: Any]!) {
+        dismiss(animated: true, completion: { () -> Void in
             self.capturedImage = image
             self.displayCapturedImage(image)
-            UIApplication.sharedApplication().setStatusBarStyle(.LightContent, animated: true)
+            UIApplication.shared.setStatusBarStyle(.lightContent, animated: true)
         })
     }
 
-    func imagePickerControllerDidCancel(picker: UIImagePickerController) {
-        dismissViewControllerAnimated(true, completion: { () -> Void in
-            UIApplication.sharedApplication().setStatusBarStyle(.LightContent, animated: true)
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        dismiss(animated: true, completion: { () -> Void in
+            UIApplication.shared.setStatusBarStyle(.lightContent, animated: true)
         })
     }
 
     // MARK: Navigation Controller Delegate
 
-    func navigationController(navigationController: UINavigationController, willShowViewController viewController: UIViewController, animated: Bool) {
-        UIApplication.sharedApplication().setStatusBarStyle(.LightContent, animated: true)
+    func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
+        UIApplication.shared.setStatusBarStyle(.lightContent, animated: true)
     }
 
 }

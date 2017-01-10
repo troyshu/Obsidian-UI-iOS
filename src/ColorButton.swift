@@ -9,15 +9,15 @@
 import Foundation
 import UIKit
 
-@IBDesignable public class ColorButton: UIButton {
+@IBDesignable open class ColorButton: UIButton {
 
-    private static let ButtonDimmingColor = UIColor.whiteColor().colorWithAlphaComponent(0.1)
+    fileprivate static let ButtonDimmingColor = UIColor.white.withAlphaComponent(0.1)
 
     /// The button's color.  Setting this will adjust the background images for the various control states.
-    @IBInspectable public var color: UIColor? {
+    @IBInspectable open var color: UIColor? {
         didSet {
             if let c = color {
-                setBackgroundColor(c, forState: .Normal)
+                setBackgroundColor(c, forState: UIControlState())
             }
         }
     }
@@ -29,13 +29,13 @@ import UIKit
     - parameter state: The state for which the color should be set
 
     */
-    public func setBackgroundColor(color: UIColor, forState state: UIControlState) {
+    open func setBackgroundColor(_ color: UIColor, forState state: UIControlState) {
 
-        setBackgroundImage(color.image, forState: state)
+        setBackgroundImage(color.image, for: state)
 
-        if state == .Normal && backgroundImageForState(.Highlighted) == nil {
+        if state == UIControlState() && backgroundImage(for: .highlighted) == nil {
             let highlightedColor = blendColor(color, ColorButton.ButtonDimmingColor, -, true).image
-            setBackgroundImage(highlightedColor, forState: .Highlighted)
+            setBackgroundImage(highlightedColor, for: .highlighted)
         }
 
     }

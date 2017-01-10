@@ -14,15 +14,15 @@ involving tapped buttons of its accessory view and changing selection.
 A CountryPickerDelegate must also conform to the PickerDelegate protocol.
 */
 public protocol CountryPickerDelegate: PickerInputDelegate {
-    func pickerDidChangeCountry(picker: CountryPicker)
+    func pickerDidChangeCountry(_ picker: CountryPicker)
 }
 
 /// A picker view with all known legal countries.
 /// The picker defaults to the country of the device's current locale.
-public class CountryPicker: PickerInputView {
+open class CountryPicker: PickerInputView {
 
     convenience init() {
-        self.init(frame: UIScreen.mainScreen().bounds)
+        self.init(frame: UIScreen.main.bounds)
     }
 
     override init(frame: CGRect) {
@@ -36,21 +36,21 @@ public class CountryPicker: PickerInputView {
     }
 
     /// The delegate of a CountryPicker must adopt the CountryPickerDelegate protocol. Methods of the protocol help
-    public var countryPickerDelegate: CountryPickerDelegate? {
+    open var countryPickerDelegate: CountryPickerDelegate? {
         didSet {
             delegate = countryPickerDelegate
         }
     }
 
     /// The ISO code of the selected country
-    public private(set) var countryCode: String?
+    open fileprivate(set) var countryCode: String?
 
     /// The name of the selected country. Set this to change the picker to the specified country
     /// as well as the text of the field.
-    public var countryName: String? {
+    open var countryName: String? {
         didSet {
             if let name = countryName {
-                if let index = alphabeticalCountryNames.indexOf(name) {
+                if let index = alphabeticalCountryNames.index(of: name) {
                     pickerView.selectRow(index, inComponent: 0, animated: true)
                     textField?.text = countryName
                 } else {
@@ -60,46 +60,46 @@ public class CountryPicker: PickerInputView {
         }
     }
 
-    private var alphabeticalCountryNames = [String]()
-    private var codesAndCountries = [String : String]()
+    fileprivate var alphabeticalCountryNames = [String]()
+    fileprivate var codesAndCountries = [String : String]()
 
     /// :nodoc:
-    override public func layoutSubviews() {
+    override open func layoutSubviews() {
         super.layoutSubviews()
     }
 
     func loadCountries() {
-        let currentLocale = NSLocale.currentLocale()
-        let countryCodes = NSLocale.ISOCountryCodes()
+        let currentLocale = Locale.current
+        let countryCodes = Locale.isoRegionCodes
 
         for countryCode in countryCodes {
-            let countryName = currentLocale.displayNameForKey(NSLocaleCountryCode, value: countryCode)
+            let countryName = (currentLocale as NSLocale).displayName(forKey: NSLocale.Key.countryCode, value: countryCode)
             if let name = countryName {
                 codesAndCountries[countryCode] = name
             }
         }
 
         let allCountryNames = codesAndCountries.values
-        alphabeticalCountryNames = allCountryNames.sort()
+        alphabeticalCountryNames = allCountryNames.sorted()
     }
 
-    private func updateCountry() {
-        countryName = alphabeticalCountryNames[pickerView.selectedRowInComponent(0)]
+    fileprivate func updateCountry() {
+        countryName = alphabeticalCountryNames[pickerView.selectedRow(inComponent: 0)]
         if let name = countryName {
             countryCode = codesAndCountries[name]
         }
     }
 
-    private func updateText() {
+    fileprivate func updateText() {
         textField?.text = countryName
     }
 
     /// Sets the picker view to the country of the current user's locale
-    public func selectCurrentUserLocale() {
+    open func selectCurrentUserLocale() {
         
-        let currentLocale = NSLocale.currentLocale()
+        let currentLocale = Locale.current
         
-        guard let currentCountryCode = currentLocale.objectForKey(NSLocaleCountryCode) as? String else {
+        guard let currentCountryCode = (currentLocale as NSLocale).object(forKey: NSLocale.Key.countryCode) as? String else {
             return
         }
         
@@ -111,12 +111,12 @@ public class CountryPicker: PickerInputView {
 
     // MARK: Picker View Delegate
 
-    public func pickerView(pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusingView view: UIView!) -> UIView {
+    open func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusingView view: UIView!) -> UIView {
         let title = alphabeticalCountryNames[row]
 
         let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.alignment = NSTextAlignment.Center
-        let textAttributes = [NSForegroundColorAttributeName : UIColor.blackColor(), NSParagraphStyleAttributeName : paragraphStyle]
+        paragraphStyle.alignment = NSTextAlignment.center
+        let textAttributes = [NSForegroundColorAttributeName : UIColor.black, NSParagraphStyleAttributeName : paragraphStyle]
         let attributedTitle = NSAttributedString(string: title, attributes: textAttributes)
 
         let label = UILabel()
@@ -124,21 +124,21 @@ public class CountryPicker: PickerInputView {
         return label
     }
 
-    public func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+    open func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         updateCountry()
         updateText()
         countryPickerDelegate?.pickerDidChangeCountry(self)
     }
 
-    public override func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+    open override func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
     }
 
-    public override func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+    open override func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         return alphabeticalCountryNames.count
     }
 
-    public func pickerView(pickerView: UIPickerView, widthForComponent component: Int) -> CGFloat {
+    open func pickerView(_ pickerView: UIPickerView, widthForComponent component: Int) -> CGFloat {
         return frame.size.width
     }
 }

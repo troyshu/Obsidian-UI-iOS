@@ -8,19 +8,19 @@
 
 import Foundation
 
-public class BaseTabBar: UIView {
+open class BaseTabBar: UIView {
 
     /// A weak reference to the parent tab bar controller
-    public weak var delegate: TabBarDelegate!
+    open weak var delegate: TabBarDelegate!
 
     /// A method called by the parent tab bar controller when the layout should change
-    public func layout() {}
+    open func layout() {}
 
     /// A method called by the parent tab bar controller when the receiver should update its UI for a selected tab
-    public func selectTab(index: Int) {}
+    open func selectTab(_ index: Int) {}
 
     /// This method must be overridden to return the frame for the tab at the passed index
-    public func frameForTab(index: Int) -> CGRect {
+    open func frameForTab(_ index: Int) -> CGRect {
         return CGRect.zero
     }
 

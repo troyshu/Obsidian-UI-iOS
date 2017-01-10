@@ -8,7 +8,7 @@
 
 import Foundation
 
-public final class MemoryCache<K: AnyObject, T: AnyObject where K: Hashable> {
+public final class MemoryCache<K, T> where K: Hashable {
 
     // MARK: Public Properties
 
@@ -16,21 +16,15 @@ public final class MemoryCache<K: AnyObject, T: AnyObject where K: Hashable> {
     public let identifier: String
 
     /// The number of objects the cache is allowed to hold.  This limit is an estimate and is not interpreted strictly.
-    public var countLimit: Int {
-        get {
-            return cache.countLimit
-        }
-        set {
-            cache.countLimit = newValue
+    public var countLimit: Int = 100 {
+        didSet {
+            prune()
         }
     }
 
     // MARK: Private Properties
 
-    private let cache: NSCache = {
-        let cache = NSCache()
-        return cache
-        }()
+    private var cache: [K : T] = [:]
 
     // MARK: Initialization
 
@@ -51,20 +45,32 @@ public final class MemoryCache<K: AnyObject, T: AnyObject where K: Hashable> {
     /// Gets or sets the cached object for the passed key
     public subscript(key: K) -> T? {
         get {
-            return cache.objectForKey(key) as? T
+            return cache[key]
         }
         set {
             if let v = newValue {
-                cache.setObject(v, forKey: key)
+                prune()
+                cache[key] = v
             } else {
-                cache.removeObjectForKey(key)
+                cache.removeValue(forKey: key)
             }
         }
     }
 
     /// Empties the cache.
     public func clear() {
-        cache.removeAllObjects()
+        cache.removeAll()
+    }
+
+    // MARK: Pruning
+    
+    private func prune() {
+        guard cache.count > countLimit else {
+            return
+        }
+        while cache.count > countLimit, let key = cache.keys.first {
+            cache.removeValue(forKey: key)
+        }
     }
 
 }

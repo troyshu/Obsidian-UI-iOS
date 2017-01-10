@@ -14,15 +14,15 @@ import AVFoundation
 import Photos
 
 /// Easily acces the app's permissions to
-public class Permissions {
+open class Permissions {
 
     public enum PermissionStatus {
-        case Authorized, Unauthorized, Unknown, Disabled
+        case authorized, unauthorized, unknown, disabled
     }
 
     // MARK: Constants
 
-    private let AskedForNotificationsDefaultsKey = "AskedForNotificationsDefaultsKey"
+    fileprivate let AskedForNotificationsDefaultsKey = "AskedForNotificationsDefaultsKey"
 
     // MARK: Managers
 
@@ -32,15 +32,15 @@ public class Permissions {
     // MARK: Contacts
 
     /// The authorization status of access to the device's contacts.
-    public func authorizationStatusContacts() -> PermissionStatus {
+    open func authorizationStatusContacts() -> PermissionStatus {
         let status = ABAddressBookGetAuthorizationStatus()
         switch status {
-        case .Authorized:
-            return .Authorized
-        case .Restricted, .Denied:
-            return .Unauthorized
-        case .NotDetermined:
-            return .Unknown
+        case .authorized:
+            return .authorized
+        case .restricted, .denied:
+            return .unauthorized
+        case .notDetermined:
+            return .unknown
         }
     }
 
@@ -52,38 +52,31 @@ public class Permissions {
     already authorized, unauthorized, disabled (false).
 
     */
-    public func askAuthorizationContacts() -> Bool {
+    open func askAuthorizationContacts() {
         switch authorizationStatusContacts() {
-        case .Unknown:
-            ABAddressBookRequestAccessWithCompletion(nil) { (completed: Bool, error: CFError!) -> Void in
-                return true
-            }
-        case .Unauthorized:
-            return false
-        case .Disabled:
-            return false
+        case .unknown:
+            ABAddressBookRequestAccessWithCompletion(nil, nil)
         default:
             break
         }
-        return false
     }
 
     // MARK: Location Always
 
     /// The authorization status of access to the device's location at all times.
-    public func authorizationStatusLocationAlways() -> PermissionStatus {
+    open func authorizationStatusLocationAlways() -> PermissionStatus {
         if !CLLocationManager.locationServicesEnabled() {
-            return .Disabled
+            return .disabled
         }
 
         let status = CLLocationManager.authorizationStatus()
         switch status {
-        case .AuthorizedAlways:
-            return .Authorized
-        case .Restricted, .Denied:
-            return .Unauthorized
-        case .NotDetermined, .AuthorizedWhenInUse:
-            return .Unknown
+        case .authorizedAlways:
+            return .authorized
+        case .restricted, .denied:
+            return .unauthorized
+        case .notDetermined, .authorizedWhenInUse:
+            return .unknown
         }
     }
 
@@ -95,12 +88,12 @@ public class Permissions {
     already authorized, unauthorized, disabled (false).
 
     */
-    public func askAuthorizationLocationAlways() -> Bool {
+    open func askAuthorizationLocationAlways() -> Bool {
         switch authorizationStatusLocationAlways() {
-        case .Unknown:
+        case .unknown:
             locationManager.requestAlwaysAuthorization()
             return true
-        case .Unauthorized, .Authorized, .Disabled:
+        case .unauthorized, .authorized, .disabled:
             return false
         }
     }
@@ -108,19 +101,19 @@ public class Permissions {
     // MARK: Location While In Use
 
     /// The authorization status of access to the device's location.
-    public func authorizationStatusLocationInUse() -> PermissionStatus {
+    open func authorizationStatusLocationInUse() -> PermissionStatus {
         if !CLLocationManager.locationServicesEnabled() {
-            return .Disabled
+            return .disabled
         }
 
         let status = CLLocationManager.authorizationStatus()
         switch status {
-        case .AuthorizedWhenInUse, .AuthorizedAlways:
-            return .Authorized
-        case .Restricted, .Denied:
-            return .Unauthorized
-        case .NotDetermined:
-            return .Unknown
+        case .authorizedWhenInUse, .authorizedAlways:
+            return .authorized
+        case .restricted, .denied:
+            return .unauthorized
+        case .notDetermined:
+            return .unknown
         }
     }
 
@@ -132,12 +125,12 @@ public class Permissions {
     already authorized, unauthorized, disabled (false).
 
     */
-    public func askAuthorizationLocationInUse() -> Bool {
+    open func askAuthorizationLocationInUse() -> Bool {
         switch authorizationStatusLocationAlways() {
-        case .Unknown:
+        case .unknown:
             locationManager.requestAlwaysAuthorization()
             return true
-        case .Unauthorized, .Authorized, .Disabled:
+        case .unauthorized, .authorized, .disabled:
             return false
         }
     }
@@ -145,15 +138,15 @@ public class Permissions {
     // MARK: Notifications
 
     /// The authorization status of the app receiving notifications.
-    public func authorizationStatusNotifications() -> PermissionStatus {
-        let settings = UIApplication.sharedApplication().currentUserNotificationSettings()
-        if settings?.types != UIUserNotificationType.None {
-            return .Authorized
+    open func authorizationStatusNotifications() -> PermissionStatus {
+        let settings = UIApplication.shared.currentUserNotificationSettings
+        if settings?.types != UIUserNotificationType() {
+            return .authorized
         } else {
-            if NSUserDefaults.standardUserDefaults().boolForKey(AskedForNotificationsDefaultsKey) {
-                return .Unauthorized
+            if UserDefaults.standard.bool(forKey: AskedForNotificationsDefaultsKey) {
+                return .unauthorized
             } else {
-                return .Unknown
+                return .unknown
             }
         }
     }
@@ -166,13 +159,13 @@ public class Permissions {
     already authorized, unauthorized, disabled (false).
 
     */
-    public func askAuthorizationNotifications() -> Bool {
+    open func askAuthorizationNotifications() -> Bool {
         switch authorizationStatusNotifications() {
-        case .Unknown:
-            let settings = UIUserNotificationSettings(forTypes: [.Alert, .Sound, .Badge], categories: nil)
-            UIApplication.sharedApplication().registerUserNotificationSettings(settings)
+        case .unknown:
+            let settings = UIUserNotificationSettings(types: [.alert, .sound, .badge], categories: nil)
+            UIApplication.shared.registerUserNotificationSettings(settings)
             return true
-        case .Unauthorized, .Authorized, .Disabled:
+        case .unauthorized, .authorized, .disabled:
             return false
         }
     }
@@ -180,15 +173,15 @@ public class Permissions {
     // MARK: Photos
 
     /// The authorization status for access to the photo library.
-    public func authorizationStatusPhotos() -> PermissionStatus {
+    open func authorizationStatusPhotos() -> PermissionStatus {
         let status = PHPhotoLibrary.authorizationStatus()
         switch status {
-        case .Authorized:
-            return .Authorized
-        case .Denied, .Restricted:
-            return .Unauthorized
-        case .NotDetermined:
-            return .Unknown
+        case .authorized:
+            return .authorized
+        case .denied, .restricted:
+            return .unauthorized
+        case .notDetermined:
+            return .unknown
         }
     }
 
@@ -200,15 +193,15 @@ public class Permissions {
     already authorized, unauthorized, disabled (false).
 
     */
-    public func askAuthorizationStatusPhotos() -> Bool {
+    open func askAuthorizationStatusPhotos() -> Bool {
         let status = authorizationStatusPhotos()
         switch status {
-        case .Unknown:
+        case .unknown:
             PHPhotoLibrary.requestAuthorization { (status: PHAuthorizationStatus) -> Void in
 
             }
             return true
-        case .Authorized, .Disabled, .Unauthorized:
+        case .authorized, .disabled, .unauthorized:
             return false
         }
     }
@@ -216,15 +209,15 @@ public class Permissions {
     // MARK: Camera
 
     /// The authorization status for use of the camera.
-    public func authorizationStatusCamera() -> PermissionStatus {
-        let status = AVCaptureDevice.authorizationStatusForMediaType(AVMediaTypeVideo)
+    open func authorizationStatusCamera() -> PermissionStatus {
+        let status = AVCaptureDevice.authorizationStatus(forMediaType: AVMediaTypeVideo)
         switch status {
-        case .Authorized:
-            return .Authorized
-        case .Denied, .Restricted:
-            return .Unauthorized
-        case .NotDetermined:
-            return .Unknown
+        case .authorized:
+            return .authorized
+        case .denied, .restricted:
+            return .unauthorized
+        case .notDetermined:
+            return .unknown
         }
     }
 
@@ -236,15 +229,15 @@ public class Permissions {
     already authorized, unauthorized, disabled (false).
 
     */
-    public func askAuthorizationStatusCamera() -> Bool {
+    open func askAuthorizationStatusCamera() -> Bool {
         let status = authorizationStatusCamera()
         switch status {
-        case .Unknown:
-            AVCaptureDevice.requestAccessForMediaType(AVMediaTypeVideo, completionHandler: { (granted: Bool) -> Void in
+        case .unknown:
+            AVCaptureDevice.requestAccess(forMediaType: AVMediaTypeVideo, completionHandler: { (granted: Bool) -> Void in
 
             })
             return true
-        case .Disabled, .Unauthorized, .Authorized:
+        case .disabled, .unauthorized, .authorized:
             return false
         }
     }
@@ -256,10 +249,10 @@ public class Permissions {
     If the app has its own settings bundle they will be opened, else the main settings view will be presented.
 
     */
-    public func openAppSettings() {
-        let url = NSURL(string: UIApplicationOpenSettingsURLString)!
-        if UIApplication.sharedApplication().canOpenURL(url) {
-            UIApplication.sharedApplication().openURL(url)
+    open func openAppSettings() {
+        let url = URL(string: UIApplicationOpenSettingsURLString)!
+        if UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.openURL(url)
         }
     }
 

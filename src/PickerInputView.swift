@@ -14,8 +14,8 @@ involving tapped buttons of its accessory view and changing selection.
 
 */
 public protocol PickerInputDelegate: class {
-    func pickerDidCancel(picker: PickerInputView)
-    func pickerDidTapDone(picker: PickerInputView)
+    func pickerDidCancel(_ picker: PickerInputView)
+    func pickerDidTapDone(_ picker: PickerInputView)
 }
 
 /**
@@ -23,7 +23,7 @@ A picker that can be used as an inputAccessoryView on a UITextField.
 Set the pickerView of the PickerView and initialize with or set the picker's textField.
 
 */
-public class PickerInputView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
+open class PickerInputView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
 
     // MARK: Configuratable Variables
 
@@ -41,20 +41,20 @@ public class PickerInputView: UIView, UIPickerViewDataSource, UIPickerViewDelega
     }
 
     /// The text field that will be updated by the picker.
-    public var textField: UITextField?
+    open var textField: UITextField?
 
     /// Background color of the picker.
-    var pickerBackgroundColor = UIColor.whiteColor()
+    var pickerBackgroundColor = UIColor.white
 
     /// Background color of the top bar.
-    var topBarBackgroundColor = UIColor.groupTableViewBackgroundColor()
+    var topBarBackgroundColor = UIColor.groupTableViewBackground
 
-    private let topBarHeight: CGFloat = 44
-    private let topBarButtonWidth: CGFloat = 80
-    private let defaultPickerHeight: CGFloat = 216
+    fileprivate let topBarHeight: CGFloat = 44
+    fileprivate let topBarButtonWidth: CGFloat = 80
+    fileprivate let defaultPickerHeight: CGFloat = 216
 
     /// A picker. Set its delegate and/or dataSource properties to display data.
-    public var pickerView: UIPickerView {
+    open var pickerView: UIPickerView {
         willSet {
             pickerView.removeFromSuperview()
         }
@@ -63,17 +63,17 @@ public class PickerInputView: UIView, UIPickerViewDataSource, UIPickerViewDelega
         }
     }
 
-    private var titleLabel: UILabel!
+    fileprivate var titleLabel: UILabel!
 
     /// A button on the right side of the input accessory view.
     /// Recommended use as a 'next field' or 'done' button.
-    public var doneButton: UIButton!
+    open var doneButton: UIButton!
 
     /// A button on the left side of the input accessory view.
-    public var cancelButton: UIButton!
+    open var cancelButton: UIButton!
 
     convenience init() {
-        self.init(frame: UIScreen.mainScreen().bounds)
+        self.init(frame: UIScreen.main.bounds)
         pickerView = UIPickerView()
         pickerView.frame = CGRect(x: 0, y: topBarHeight, width: frame.size.width, height: defaultPickerHeight)
         pickerView.backgroundColor = pickerBackgroundColor
@@ -120,28 +120,28 @@ public class PickerInputView: UIView, UIPickerViewDataSource, UIPickerViewDelega
         self.frame = CGRect(x: 0, y: 0, width: frame.size.width, height: topBarHeight + defaultPickerHeight)
     }
 
-    private var accessoryView: UIView?
+    fileprivate var accessoryView: UIView?
 
-    private func layoutInputAccessoryView() -> UIView {
+    fileprivate func layoutInputAccessoryView() -> UIView {
         accessoryView = UIView(frame: CGRect(x: 0, y: 0, width: frame.size.width, height: topBarHeight))
         inputAccessoryView?.backgroundColor = topBarBackgroundColor
 
         titleLabel = UILabel(frame: CGRect(x: topBarButtonWidth, y: 0, width: frame.size.width, height: topBarHeight))
-        titleLabel.backgroundColor = UIColor.clearColor()
-        titleLabel.textAlignment = NSTextAlignment.Center
+        titleLabel.backgroundColor = UIColor.clear
+        titleLabel.textAlignment = NSTextAlignment.center
         accessoryView!.addSubview(titleLabel)
 
         cancelButton = UIButton(frame: CGRect(x: 0, y: 0, width: topBarButtonWidth, height: topBarHeight))
-        cancelButton.backgroundColor = UIColor.clearColor()
-        cancelButton.setTitle("Cancel", forState: UIControlState.Normal)
-        addHandler(cancelButton, events: UIControlEvents.TouchUpInside, target: self, handler: self.dynamicType.didTapCancelButton)
+        cancelButton.backgroundColor = UIColor.clear
+        cancelButton.setTitle("Cancel", for: UIControlState())
+        addHandler(cancelButton, events: UIControlEvents.touchUpInside, target: self, handler: type(of: self).didTapCancelButton)
         accessoryView!.addSubview(cancelButton)
 
         doneButton = UIButton(frame: CGRect(x: frame.size.width - topBarButtonWidth, y: 0, width: topBarButtonWidth, height: topBarHeight))
-        doneButton.backgroundColor = UIColor.clearColor()
-        doneButton.setTitleColor(UIColor.blackColor(), forState: UIControlState.Normal)
-        doneButton.setTitle("Done", forState: UIControlState.Normal)
-        addHandler(doneButton, events: UIControlEvents.TouchUpInside, target: self, handler: self.dynamicType.didTapDoneButton)
+        doneButton.backgroundColor = UIColor.clear
+        doneButton.setTitleColor(UIColor.black, for: UIControlState())
+        doneButton.setTitle("Done", for: UIControlState())
+        addHandler(doneButton, events: UIControlEvents.touchUpInside, target: self, handler: type(of: self).didTapDoneButton)
         accessoryView!.addSubview(doneButton)
 
         return accessoryView!
@@ -149,19 +149,19 @@ public class PickerInputView: UIView, UIPickerViewDataSource, UIPickerViewDelega
 
     // MARK: Button Actions
 
-    private dynamic func didTapCancelButton(sender: UIButton) {
+    fileprivate dynamic func didTapCancelButton(_ sender: UIButton) {
         delegate?.pickerDidCancel(self)
     }
 
-    private dynamic func didTapDoneButton(sender: UIButton) {
+    fileprivate dynamic func didTapDoneButton(_ sender: UIButton) {
         delegate?.pickerDidTapDone(self)
     }
 
-    public func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+    open func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 0
     }
 
-    public func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+    open func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         return 0
     }
 

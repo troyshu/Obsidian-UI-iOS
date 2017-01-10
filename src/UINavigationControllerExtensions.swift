@@ -18,7 +18,7 @@ public extension UINavigationController {
     - parameter animated: If YES, animate the pushing or popping of the top view controller. If NO, replace the view controller without any animations.
 
     */
-    public func replace(find: UIViewController, replace: UIViewController, animated: Bool) {
+    public func replace(_ find: UIViewController, replace: UIViewController, animated: Bool) {
         var vcs = self.viewControllers
         if let index = search(vcs, predicate: { $0 === find }) {
             vcs[index] = replace

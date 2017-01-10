@@ -24,8 +24,8 @@ public final class BasicTabBar: BaseTabBar {
         commonInit()
     }
 
-    private func commonInit() {
-        backgroundColor = backgroundColor ?? UIColor.whiteColor()
+    fileprivate func commonInit() {
+        backgroundColor = backgroundColor ?? UIColor.white
     }
 
     /// The accent color, used for the selected tab text and indicator
@@ -52,7 +52,7 @@ public final class BasicTabBar: BaseTabBar {
     }
 
     /// The font used for the tab text
-    public var tabFont = UIFont.systemFontOfSize(UIFont.systemFontSize()) {
+    public var tabFont = UIFont.systemFont(ofSize: UIFont.systemFontSize) {
         didSet {
             layoutButtons()
         }
@@ -60,7 +60,7 @@ public final class BasicTabBar: BaseTabBar {
 
     // MARK: Layout
 
-    private func layoutButtons() {
+    fileprivate func layoutButtons() {
 
         guard delegate != nil else {
             return
@@ -71,13 +71,13 @@ public final class BasicTabBar: BaseTabBar {
         let tabNames = delegate.tabNames
 
         let buttons = tabNames.map { (title) -> UIButton in
-            let b = UIButton(type: .Custom)
-            b.setTitle(title, forState: .Normal)
-            b.addTarget(self, action: "selectTabButton:", forControlEvents: .TouchUpInside)
+            let b = UIButton(type: .custom)
+            b.setTitle(title, for: UIControlState())
+            b.addTarget(self, action: #selector(BasicTabBar.selectTabButton(_:)), for: .touchUpInside)
             b.titleLabel?.font = self.tabFont
-            b.setTitleColor(self.textColor, forState: .Normal)
-            b.setTitleColor(self.tintColor, forState: .Selected)
-            b.setTitleColor(self.tintColor, forState: .Highlighted)
+            b.setTitleColor(self.textColor, for: UIControlState())
+            b.setTitleColor(self.tintColor, for: .selected)
+            b.setTitleColor(self.tintColor, for: .highlighted)
             return b
         }
 
@@ -85,7 +85,7 @@ public final class BasicTabBar: BaseTabBar {
 
         var x: CGFloat = 0
 
-        for (i, b) in buttons.enumerate() {
+        for (i, b) in buttons.enumerated() {
             b.x = x
             b.y = 0
             b.width = buttonSize
@@ -109,18 +109,18 @@ public final class BasicTabBar: BaseTabBar {
     }
 
     /// :nodoc:
-    public override func selectTab(index: Int) {
-        if let buttons = (subviews as? [UIButton])?.sort({ $0.x < $1.x }) {
-            for (i, b) in buttons.enumerate() {
-                b.selected = (i == index)
+    public override func selectTab(_ index: Int) {
+        if let buttons = (subviews as? [UIButton])?.sorted(by: { $0.x < $1.x }) {
+            for (i, b) in buttons.enumerated() {
+                b.isSelected = (i == index)
             }
         }
         setNeedsDisplay()
     }
 
-    public override func frameForTab(index: Int) -> CGRect {
-        if let buttons = (subviews as? [UIButton])?.sort({ $0.x < $1.x }) {
-            for (i, b) in buttons.enumerate() {
+    public override func frameForTab(_ index: Int) -> CGRect {
+        if let buttons = (subviews as? [UIButton])?.sorted(by: { $0.x < $1.x }) {
+            for (i, b) in buttons.enumerated() {
                 if i == index {
                     return b.frame
                 }
@@ -130,15 +130,15 @@ public final class BasicTabBar: BaseTabBar {
     }
 
     // MARK: Actions
-    private dynamic func selectTabButton(button: UIButton) {
+    fileprivate dynamic func selectTabButton(_ button: UIButton) {
         delegate.selectTab(button.tag)
     }
 
     // MARK: UIView Overrides
 
     /// :nodoc:
-    public override func drawRect(rect: CGRect) {
-        super.drawRect(rect)
+    public override func draw(_ rect: CGRect) {
+        super.draw(rect)
         let buttonWidth = rect.width / CGFloat(delegate.tabNames.count)
         tintColor.setFill()
         let fillRect = CGRect(x: buttonWidth * CGFloat(delegate.selectedTabIndex), y: rect.height - indicatorHeight, width: buttonWidth, height: indicatorHeight)

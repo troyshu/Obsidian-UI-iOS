@@ -8,21 +8,8 @@
 
 import Foundation
 
-postfix operator ¡ { }
-
-/// :nodoc:
-public postfix func ¡ (inout flag: Bool) -> Bool {
-    flag = !flag
-    return !flag
-}
-
-prefix operator ¡ { }
-
-/// :nodoc:
-public prefix func ¡ (inout flag: Bool) -> Bool {
-    flag = !flag
-    return flag
-}
+postfix operator ¡
+prefix operator ¡
 
 /**
  Prefix and postfix operator ¡ inverts Bool value before and after it has been evaluated.
@@ -31,8 +18,20 @@ public prefix func ¡ (inout flag: Bool) -> Bool {
 
  */
 public protocol Invertable {
-    postfix func ¡ (inout flag: Bool) -> Bool
-    prefix func ¡ (inout flag: Bool) -> Bool
+    postfix func ¡ (flag: inout Self) -> Self
+    prefix func ¡ (flag: inout Self) -> Self
 }
 
-extension Bool : Invertable { }
+extension Bool : Invertable {
+    /// :nodoc:
+    public static prefix func ¡ (flag: inout Bool) -> Bool {
+        flag = !flag
+        return flag
+    }
+    
+    /// :nodoc:
+    public static postfix func ¡ (flag: inout Bool) -> Bool {
+        flag = !flag
+        return !flag
+    }
+}

@@ -11,38 +11,38 @@ import UIKit
 
 
 private struct DrawerPresentationControllerConstants {
-    static let AnimationDuration: NSTimeInterval = 0.25
+    static let AnimationDuration: TimeInterval = 0.25
     static let DefaultDrawerWidth: CGFloat = 320.0
-    static let DefaultBackgroundColor = UIColor.blackColor().colorWithAlphaComponent(0.75)
+    static let DefaultBackgroundColor = UIColor.black.withAlphaComponent(0.75)
 }
 
 /// The side on which the drawer should be presented
 public enum DrawerSide: Int {
-    case Left
-    case Right
+    case left
+    case right
 }
 
 private final class DrawerPresentationController: UIPresentationController {
 
     // MARK: Public Properties
 
-    private var dimmingColor: UIColor = DrawerPresentationControllerConstants.DefaultBackgroundColor
+    fileprivate var dimmingColor: UIColor = DrawerPresentationControllerConstants.DefaultBackgroundColor
 
     // MARK: Private Properties
 
-    private let side: DrawerSide
-    private let dimmingView = UIView()
+    fileprivate let side: DrawerSide
+    fileprivate let dimmingView = UIView()
 
     // MARK: Initialization
 
-    private init(presentedViewController: UIViewController!, presentingViewController: UIViewController!, side: DrawerSide) {
+    fileprivate init(presentedViewController: UIViewController!, presentingViewController: UIViewController!, side: DrawerSide) {
         self.side = side
-        super.init(presentedViewController: presentedViewController, presentingViewController: presentingViewController)
+        super.init(presentedViewController: presentedViewController, presenting: presentingViewController)
     }
 
     // MARK: Presentation
 
-    private override func presentationTransitionWillBegin() {
+    fileprivate override func presentationTransitionWillBegin() {
 
         super.presentationTransitionWillBegin()
 
@@ -50,43 +50,43 @@ private final class DrawerPresentationController: UIPresentationController {
         dimmingView.frame = containerView!.bounds
         dimmingView.alpha = 0.0
 
-        let tap = UITapGestureRecognizer(target: self, action: "dismissController:")
+        let tap = UITapGestureRecognizer(target: self, action: #selector(DrawerPresentationController.dismissController(_:)))
         dimmingView.addGestureRecognizer(tap)
 
         containerView!.addSubview(dimmingView)
-        containerView!.addSubview(presentedView()!)
+        containerView!.addSubview(presentedView!)
 
-        let coordinator = presentingViewController.transitionCoordinator()
+        let coordinator = presentingViewController.transitionCoordinator
 
-        coordinator?.animateAlongsideTransition({ (context) in
+        coordinator?.animate(alongsideTransition: { (context) in
             self.dimmingView.alpha = 1.0
             }, completion: nil)
 
     }
 
-    private override func dismissalTransitionWillBegin() {
+    fileprivate override func dismissalTransitionWillBegin() {
 
-        let coordinator = presentingViewController.transitionCoordinator()
+        let coordinator = presentingViewController.transitionCoordinator
 
-        coordinator?.animateAlongsideTransition({ (context) in
+        coordinator?.animate(alongsideTransition: { (context) in
             self.dimmingView.alpha = 0.0
             }, completion: nil)
 
     }
 
-    private override func dismissalTransitionDidEnd(completed: Bool) {
+    fileprivate override func dismissalTransitionDidEnd(_ completed: Bool) {
         super.dismissalTransitionDidEnd(completed)
         dimmingView.removeFromSuperview()
     }
 
-    private override func frameOfPresentedViewInContainerView() -> CGRect {
+    fileprivate override var frameOfPresentedViewInContainerView : CGRect {
 
         let drawerWidth = DrawerPresentationControllerConstants.DefaultDrawerWidth
 
         switch side {
-        case .Left:
+        case .left:
             return CGRect(origin: CGPoint.zero, size: CGSize(width: drawerWidth, height: containerView!.height))
-        case .Right:
+        case .right:
             return CGRect(origin: CGPoint(x: containerView!.width - drawerWidth, y: 0.0), size: CGSize(width: drawerWidth, height: containerView!.height))
         }
 
@@ -94,54 +94,54 @@ private final class DrawerPresentationController: UIPresentationController {
 
     // MARK: Actions
 
-    private dynamic func dismissController(sender: UITapGestureRecognizer) {
-        presentingViewController.dismissViewControllerAnimated(true, completion: nil)
+    fileprivate dynamic func dismissController(_ sender: UITapGestureRecognizer) {
+        presentingViewController.dismiss(animated: true, completion: nil)
     }
 
 }
 
 private final class DrawerAnimationController: NSObject, UIViewControllerAnimatedTransitioning {
 
-    private let presenting: Bool
-    private let side: DrawerSide
+    fileprivate let presenting: Bool
+    fileprivate let side: DrawerSide
 
-    private init(side: DrawerSide, presenting: Bool) {
+    fileprivate init(side: DrawerSide, presenting: Bool) {
         self.side = side
         self.presenting = presenting
         super.init()
     }
 
-    @objc private func transitionDuration(transitionContext: UIViewControllerContextTransitioning?) -> NSTimeInterval {
+    @objc fileprivate func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
         return DrawerPresentationControllerConstants.AnimationDuration
     }
 
-    @objc private func animateTransition(transitionContext: UIViewControllerContextTransitioning) {
+    @objc fileprivate func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
 
-        let fromController = transitionContext.viewControllerForKey(UITransitionContextFromViewControllerKey)
-        let toController = transitionContext.viewControllerForKey(UITransitionContextToViewControllerKey)
+        let fromController = transitionContext.viewController(forKey: UITransitionContextViewControllerKey.from)
+        let toController = transitionContext.viewController(forKey: UITransitionContextViewControllerKey.to)
 
         if let targetController = (presenting ? toController : fromController) {
 
-            let destinationFrame = transitionContext.finalFrameForViewController(targetController)
+            let destinationFrame = transitionContext.finalFrame(for: targetController)
             var originFrame = destinationFrame
 
             var offset: CGFloat!
 
             switch side {
-            case .Left:
+            case .left:
                 offset = -destinationFrame.width
-            case .Right:
+            case .right:
                 offset = destinationFrame.width
             }
 
-            originFrame.offsetInPlace(dx: offset, dy: 0)
+            originFrame.offset(offset, 0)
 
             targetController.view.frame = presenting ? originFrame : destinationFrame
-            transitionContext.containerView()?.addSubview(targetController.view)
+            transitionContext.containerView.addSubview(targetController.view)
 
-            let duration = transitionDuration(transitionContext)
+            let duration = transitionDuration(using: transitionContext)
 
-            UIView.animateWithDuration(duration, animations: { () -> Void in
+            UIView.animate(withDuration: duration, animations: { () -> Void in
                 targetController.view.frame = self.presenting ? destinationFrame : originFrame
                 }, completion: { (finished) -> Void in
                     transitionContext.completeTransition(finished)
@@ -155,22 +155,22 @@ private final class DrawerAnimationController: NSObject, UIViewControllerAnimate
 
 private final class _DrawerTransitioningDelegate: NSObject, UIViewControllerTransitioningDelegate {
 
-    private let side: DrawerSide
+    fileprivate let side: DrawerSide
 
-    private init(side: DrawerSide) {
+    fileprivate init(side: DrawerSide) {
         self.side = side
         super.init()
     }
 
-    @objc func presentationControllerForPresentedViewController(presented: UIViewController, presentingViewController presenting: UIViewController, sourceViewController source: UIViewController) -> UIPresentationController? {
+    @objc func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
         return DrawerPresentationController(presentedViewController: presented, presentingViewController: presenting, side: side)
     }
 
-    @objc func animationControllerForPresentedController(presented: UIViewController, presentingController presenting: UIViewController, sourceController source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+    @objc func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         return DrawerAnimationController(side: side, presenting: true)
     }
 
-    @objc func animationControllerForDismissedController(dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+    @objc func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         return DrawerAnimationController(side: side, presenting: false)
     }
 
@@ -178,7 +178,7 @@ private final class _DrawerTransitioningDelegate: NSObject, UIViewControllerTran
 
 private var delegates: [DrawerSide : UIViewControllerTransitioningDelegate] = [:]
 
-func DrawerTransitioningDelegate(side: DrawerSide) -> UIViewControllerTransitioningDelegate {
+func DrawerTransitioningDelegate(_ side: DrawerSide) -> UIViewControllerTransitioningDelegate {
     let delegate = delegates[side] ?? _DrawerTransitioningDelegate(side: side)
     delegates[side] = delegate
     return delegate

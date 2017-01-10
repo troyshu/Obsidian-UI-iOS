@@ -18,7 +18,7 @@ public extension Array {
      - returns: Chunks of the receiver
 
      */
-    public func chunk(splitSize: Index) -> [[Element]] {
+    public func chunk(_ splitSize: Index) -> [[Element]] {
         if count <= splitSize {
             return [self]
         } else {
@@ -44,13 +44,13 @@ public extension Array {
      - returns: the number of elements meeting the condition
 
      */
-    func countWhere (test: (Element) -> Bool) -> Int {
+    func countWhere (_ test: (Element) -> Bool) -> Int {
 
         var result = 0
 
         for item in self {
             if test(item) {
-                result++
+                result += 1
             }
         }
 
@@ -68,7 +68,7 @@ public extension Array {
  - returns: Grouped dictionary
 
  */
-public func group<T, U>(array: Array<T>, group: (Array<T>.Element) -> U) -> [U: Array<T>] {
+public func group<T, U>(_ array: Array<T>, group: (Array<T>.Element) -> U) -> [U: Array<T>] {
 
     var result = [U: Array<T>]()
 
@@ -95,6 +95,6 @@ public func group<T, U>(array: Array<T>, group: (Array<T>.Element) -> U) -> [U: 
  - returns: a filtered version of the receiver with nil values excluded
 
  */
-public func filterNils<T>(array: [T?]) -> [T] {
+public func filterNils<T>(_ array: [T?]) -> [T] {
     return array.filter({ $0 != nil }).map({ $0! })
 }

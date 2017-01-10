@@ -16,7 +16,7 @@ public extension Double {
     - parameter percent: The amount to discount. A value between 0 and 1.
     - returns: The remaining value.
     */
-    public func discountedBy(percent: Double) -> Double {
+    public func discountedBy(_ percent: Double) -> Double {
         return self * (1 - percent)
     }
 }

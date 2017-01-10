@@ -8,22 +8,22 @@
 
 import Foundation
 
-@IBDesignable public class GradientView: UIView {
+@IBDesignable open class GradientView: UIView {
 
     /// The top color of the gradient.
-    @IBInspectable public var startColor: UIColor = UIColor.whiteColor()
+    @IBInspectable open var startColor: UIColor = UIColor.white
 
     /// The middle color of the gradient.
-    @IBInspectable public var middleColor: UIColor = UIColor(red:0.62, green:0.53, blue:0.89, alpha:1)
+    @IBInspectable open var middleColor: UIColor = UIColor(red:0.62, green:0.53, blue:0.89, alpha:1)
 
     /// The bottom color of the gradient.
-    @IBInspectable public var endColor: UIColor = UIColor.blackColor()
+    @IBInspectable open var endColor: UIColor = UIColor.black
 
     /// Whether or not the middle color is present in the gradient in between the startColor and endColor.
-    @IBInspectable public var useMiddleColor: Bool = true
+    @IBInspectable open var useMiddleColor: Bool = true
 
     /// Setting this will cause the startColor, middleColor, endColor, and useMiddleColor to be ignored.
-    public var colors: [UIColor]?
+    open var colors: [UIColor]?
 
     // MARK: Initialization
 
@@ -42,18 +42,18 @@ import Foundation
         useMiddleColor = true
     }
 
-    public override func drawRect(rect: CGRect) {
+    open override func draw(_ rect: CGRect) {
 
-        backgroundColor = UIColor.clearColor()
+        backgroundColor = UIColor.clear
 
         let gradient = CAGradientLayer()
         gradient.frame = bounds
         if colors != nil {
-            gradient.colors = colors?.map({ $0.CGColor })
+            gradient.colors = colors?.map({ $0.cgColor })
         } else {
-            gradient.colors = [startColor.CGColor]
-            if useMiddleColor { gradient.colors?.append(middleColor.CGColor) }
-            gradient.colors?.append(endColor.CGColor)
+            gradient.colors = [startColor.cgColor]
+            if useMiddleColor { gradient.colors?.append(middleColor.cgColor) }
+            gradient.colors?.append(endColor.cgColor)
         }
         layer.addSublayer(gradient)
     }

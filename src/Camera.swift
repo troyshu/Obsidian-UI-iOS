@@ -12,10 +12,10 @@ import AVFoundation
 public protocol CameraDelegate {
 
     /// Delegates receive this message whenever the camera captures and outputs a new video frame.
-    func cameraCaptureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!)
+    func cameraCaptureOutput(_ captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!)
 
     /// Delegates receive this message whenever a late video frame is dropped.
-    func cameracaptureOutput(captureOutput: AVCaptureOutput!, didDropSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!)
+    func cameracaptureOutput(_ captureOutput: AVCaptureOutput!, didDropSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!)
 
     /**
      This method is called after startRecording is called.
@@ -23,7 +23,7 @@ public protocol CameraDelegate {
      - parameter movieURL: An NSURL where the recorded video is being saved. Movie will exist at this URL until startRecording is called again.
 
      */
-    func cameraDidStartRecordingVideo(movieURL: NSURL)
+    func cameraDidStartRecordingVideo(_ movieURL: URL)
 
     /**
      This method is called after stopRecording is called.
@@ -31,7 +31,7 @@ public protocol CameraDelegate {
      - parameter movieURL: An NSURL where the recorded video has been saved. Movie will exist at this URL until startRecording is called again.
 
      */
-    func cameraDidFinishRecordingVideo(movieURL: NSURL)
+    func cameraDidFinishRecordingVideo(_ movieURL: URL)
 }
 
 /**
@@ -39,29 +39,29 @@ public protocol CameraDelegate {
  The camera can be configured to adjust focus and exposure.
 
  */
-public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureFileOutputRecordingDelegate {
+open class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureFileOutputRecordingDelegate {
 
-    private var session = AVCaptureSession()
-    private var sessionQueue = dispatch_queue_create("AlfredoCameraSession", DISPATCH_QUEUE_SERIAL)
-    private var frontCamera: AVCaptureDevice?
-    private var backCamera: AVCaptureDevice?
-    private var currentCamera: AVCaptureDevice?
-    private var videoDeviceInput: AVCaptureDeviceInput?
-    private var audioDeviceinput: AVCaptureDeviceInput?
-    private var stillImageOutput = AVCaptureStillImageOutput()
-    private var videoDataOutput: AVCaptureVideoDataOutput?
-    private var audioDataOutput: AVCaptureAudioDataOutput?
-    private var captureConnection: AVCaptureConnection?
-    private var useFrontCamera = false
+    fileprivate var session = AVCaptureSession()
+    fileprivate var sessionQueue = DispatchQueue(label: "AlfredoCameraSession", attributes: [])
+    fileprivate var frontCamera: AVCaptureDevice?
+    fileprivate var backCamera: AVCaptureDevice?
+    fileprivate var currentCamera: AVCaptureDevice?
+    fileprivate var videoDeviceInput: AVCaptureDeviceInput?
+    fileprivate var audioDeviceinput: AVCaptureDeviceInput?
+    fileprivate var stillImageOutput = AVCaptureStillImageOutput()
+    fileprivate var videoDataOutput: AVCaptureVideoDataOutput?
+    fileprivate var audioDataOutput: AVCaptureAudioDataOutput?
+    fileprivate var captureConnection: AVCaptureConnection?
+    fileprivate var useFrontCamera = false
 
     /// The delegate must conform to the CameraDelegate protocol.
-    public var delegate: CameraDelegate?
+    open var delegate: CameraDelegate?
 
     /// Add this layer to a view to get live camera preview
-    public var previewLayer: AVCaptureVideoPreviewLayer?
+    open var previewLayer: AVCaptureVideoPreviewLayer?
 
     /// How the camera focuses
-    public var focusMode: AVCaptureFocusMode? {
+    open var focusMode: AVCaptureFocusMode? {
         get {
             return currentCamera?.focusMode
         }
@@ -73,7 +73,7 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
     }
 
     /// How the flash fires. Default is off.
-    public var flashMode: AVCaptureFlashMode? {
+    open var flashMode: AVCaptureFlashMode? {
         get {
             return currentCamera?.flashMode
         }
@@ -96,7 +96,7 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
 
     // MARK: Session
 
-    private func setupSession() {
+    fileprivate func setupSession() {
         session.sessionPreset = sessionPreset
 
         session.beginConfiguration()
@@ -106,7 +106,7 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
         session.commitConfiguration()
 
         previewLayer = AVCaptureVideoPreviewLayer(session: session)
-        previewLayer?.backgroundColor = UIColor.blackColor().CGColor
+        previewLayer?.backgroundColor = UIColor.black.cgColor
         previewLayer?.videoGravity = AVLayerVideoGravityResizeAspectFill
 
         session.startRunning()
@@ -120,7 +120,7 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
     // MARK: Inputs & Outputs
 
     /// Checks device for front and back cameras
-    public func hasFrontAndBackCameras() -> Bool {
+    open func hasFrontAndBackCameras() -> Bool {
         let hasFront = hasFrontCamera
         let hasBack = hasBackCamera
 
@@ -132,36 +132,36 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
     }
 
     /// Checks if the device has a camera at the front of the device, facing the user.
-    public var hasFrontCamera: Bool {
+    open var hasFrontCamera: Bool {
         get {
             return frontCamera != nil
         }
     }
 
     /// Checks if the device has a camera at the back of the device, facing away from the user.
-    public var hasBackCamera: Bool {
+    open var hasBackCamera: Bool {
         get {
             return backCamera != nil
         }
     }
 
-    private func addVideoInput() {
-        for device in AVCaptureDevice.devicesWithMediaType(AVMediaTypeVideo) {
-            if device.position == AVCaptureDevicePosition.Back {
+    fileprivate func addVideoInput() {
+        for device in AVCaptureDevice.devices(withMediaType: AVMediaTypeVideo) {
+            if (device as AnyObject).position == AVCaptureDevicePosition.back {
                 backCamera = device as? AVCaptureDevice
-            } else if device.position == AVCaptureDevicePosition.Front {
+            } else if (device as AnyObject).position == AVCaptureDevicePosition.front {
                 frontCamera = device as? AVCaptureDevice
             }
         }
 
         if !useFrontCamera {
             if backCamera == nil {
-                backCamera = AVCaptureDevice.defaultDeviceWithMediaType(AVMediaTypeVideo)
+                backCamera = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeVideo)
             }
             currentCamera = backCamera
         } else {
             if frontCamera == nil {
-                frontCamera = AVCaptureDevice.defaultDeviceWithMediaType(AVMediaTypeVideo)
+                frontCamera = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeVideo)
             }
             currentCamera = frontCamera
         }
@@ -176,13 +176,13 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
             session.addInput(videoDeviceInput)
         }
 
-        if let port = videoDeviceInput?.ports.first as? AVCaptureInputPort, preview = previewLayer {
+        if let port = videoDeviceInput?.ports.first as? AVCaptureInputPort, let preview = previewLayer {
             captureConnection = AVCaptureConnection(inputPort: port, videoPreviewLayer: preview)
         }
     }
 
-    private func addAudioInput() {
-        let audioDevice = AVCaptureDevice.defaultDeviceWithMediaType(AVMediaTypeAudio)
+    fileprivate func addAudioInput() {
+        let audioDevice = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeAudio)
 
         let audioInput = try? AVCaptureDeviceInput(device: audioDevice)
 
@@ -191,7 +191,7 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
         }
     }
 
-    private func addStillImageOutput() {
+    fileprivate func addStillImageOutput() {
         stillImageOutput.outputSettings = [AVVideoCodecKey : AVVideoCodecJPEG]
 
         if session.canAddOutput(stillImageOutput) {
@@ -199,7 +199,7 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
         }
     }
 
-    private func addVideoOutput() {
+    fileprivate func addVideoOutput() {
         videoDataOutput = AVCaptureVideoDataOutput()
         videoDataOutput!.alwaysDiscardsLateVideoFrames = true
         videoDataOutput!.setSampleBufferDelegate(self, queue: sessionQueue)
@@ -209,7 +209,7 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
         }
     }
 
-    private func addAudioOutput() {
+    fileprivate func addAudioOutput() {
         audioDataOutput = AVCaptureAudioDataOutput()
 
         if session.canAddOutput(audioDataOutput) {
@@ -217,9 +217,9 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
         }
     }
 
-    private var movieFileOutput = AVCaptureMovieFileOutput()
+    fileprivate var movieFileOutput = AVCaptureMovieFileOutput()
 
-    private func addMovieFileOutput() {
+    fileprivate func addMovieFileOutput() {
         if session.canAddOutput(movieFileOutput) {
             session.addOutput(movieFileOutput)
         }
@@ -234,7 +234,7 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
     - parameter focusDistance: A value between 0 and 1 (near and far) to adjust focus
 
     */
-    public func focusTo(lensPosition: Float) {
+    open func focusTo(_ lensPosition: Float) {
         if let device = currentCamera {
             do {
                 try device.lockForConfiguration()
@@ -253,7 +253,7 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
      - parameter exposureValue: A bias applied to the target exposure value.
 
      */
-    public func compensateExposure(exposureValue: Float) {
+    open func compensateExposure(_ exposureValue: Float) {
         // locked, auto, continuousAuto, custom
         currentCamera?.setExposureTargetBias(exposureValue, completionHandler: { (time: CMTime) -> Void in
 
@@ -261,7 +261,7 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
     }
 
     /// The exposure mode.
-    public var exposureMode: AVCaptureExposureMode {
+    open var exposureMode: AVCaptureExposureMode {
         get {
             return currentCamera!.exposureMode
         }
@@ -277,7 +277,7 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
     }
 
     /// The exposure level's offset from the target exposure value, in EV units
-    public var exposureMeterOffset: Float {
+    open var exposureMeterOffset: Float {
         get {
             return currentCamera!.exposureTargetOffset
         }
@@ -289,9 +289,9 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
      - parameter point: The location in the image that the camera will focus on
 
      */
-    public func focusAtPoint(point: CGPoint) {
+    open func focusAtPoint(_ point: CGPoint) {
         if let camera = currentCamera {
-            if camera.focusPointOfInterestSupported {
+            if camera.isFocusPointOfInterestSupported {
                 camera.focusPointOfInterest = point
             }
         }
@@ -303,9 +303,9 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
      - parameter point: The location in the image that the camera will focus on
 
      */
-    public func exposeAtPoint(point: CGPoint) {
+    open func exposeAtPoint(_ point: CGPoint) {
         if let camera = currentCamera {
-            if camera.exposurePointOfInterestSupported {
+            if camera.isExposurePointOfInterestSupported {
                 camera.exposurePointOfInterest = point
             }
         }
@@ -317,13 +317,13 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
      - parameter point: Where the camera should target for focus and exposure values
 
      */
-    public func focusAndExposeAtPoint(point: CGPoint) {
+    open func focusAndExposeAtPoint(_ point: CGPoint) {
         focusAtPoint(point)
         exposeAtPoint(point)
     }
 
     /// Switches between front and back cameras.
-    public func switchCamera() {
+    open func switchCamera() {
         useFrontCamera = !useFrontCamera
         session.beginConfiguration()
         session.removeInput(videoDeviceInput)
@@ -337,12 +337,12 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
      - parameter magnification: The level of magification
 
      */
-    public func zoom(magnification: Double) {
+    open func zoom(_ magnification: Double) {
         captureConnection?.videoScaleAndCropFactor = CGFloat(magnification)
     }
 
     /// Captures an image from the camera and saves it to the photos library.
-    public func captureImage() {
+    open func captureImage() {
         captureImage(nil)
     }
 
@@ -353,15 +353,15 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
      be saved to the photos library.
 
      */
-    public func captureImage(completion: ((capturedImage: UIImage) -> Void)?) {
-        stillImageOutput.captureStillImageAsynchronouslyFromConnection(stillImageOutput.connectionWithMediaType(AVMediaTypeVideo), completionHandler: { (sampleBuffer, error) -> Void in
+    open func captureImage(_ completion: ((_ capturedImage: UIImage) -> Void)?) {
+        stillImageOutput.captureStillImageAsynchronously(from: stillImageOutput.connection(withMediaType: AVMediaTypeVideo), completionHandler: { (sampleBuffer, error) -> Void in
             if sampleBuffer != nil {
 
                 let data = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(sampleBuffer)
-                let image = UIImage(data: data)
+                let image = UIImage(data: data!)
                 if let capturedImage = image {
                     if let finishIt = completion {
-                        finishIt(capturedImage: capturedImage)
+                        finishIt(capturedImage)
                     } else {
                         Photos().saveImage(image!, completion: nil)
                     }
@@ -370,45 +370,45 @@ public class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVC
         })
     }
 
-    private let outputPath = "\(NSTemporaryDirectory())output.mov"
+    fileprivate let outputPath = "\(NSTemporaryDirectory())output.mov"
 
-    public func startRecording() {
-        let outputURL = NSURL(fileURLWithPath: outputPath)
+    open func startRecording() {
+        let outputURL = URL(fileURLWithPath: outputPath)
 
-        let fileManager = NSFileManager()
-        if fileManager.fileExistsAtPath(outputPath) {
+        let fileManager = FileManager()
+        if fileManager.fileExists(atPath: outputPath) {
             do {
-                try fileManager.removeItemAtPath(outputPath)
+                try fileManager.removeItem(atPath: outputPath)
             } catch {
 
             }
         }
 
-        movieFileOutput.startRecordingToOutputFileURL(outputURL, recordingDelegate: self)
+        movieFileOutput.startRecording(toOutputFileURL: outputURL, recordingDelegate: self)
     }
 
-    public func stopRecording() {
+    open func stopRecording() {
         movieFileOutput.stopRecording()
     }
 
     // MARK: File Output Recording Delegate
 
-    public func captureOutput(captureOutput: AVCaptureFileOutput!, didFinishRecordingToOutputFileAtURL outputFileURL: NSURL!, fromConnections connections: [AnyObject]!, error: NSError!) {
+    open func capture(_ captureOutput: AVCaptureFileOutput!, didFinishRecordingToOutputFileAt outputFileURL: URL!, fromConnections connections: [Any]!, error: Error!) {
         delegate?.cameraDidFinishRecordingVideo(outputFileURL)
     }
 
-    public func captureOutput(captureOutput: AVCaptureFileOutput!, didStartRecordingToOutputFileAtURL fileURL: NSURL!, fromConnections connections: [AnyObject]!) {
-        delegate?.cameraDidStartRecordingVideo(NSURL(fileURLWithPath: outputPath))
+    open func capture(_ captureOutput: AVCaptureFileOutput!, didStartRecordingToOutputFileAt fileURL: URL!, fromConnections connections: [Any]!) {
+        delegate?.cameraDidStartRecordingVideo(URL(fileURLWithPath: outputPath))
     }
 
     // MARK: Sample Buffer Delegate
 
-    public func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {
+    open func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
 
         delegate?.cameraCaptureOutput(captureOutput, didOutputSampleBuffer: sampleBuffer, fromConnection: connection)
     }
 
-    public func captureOutput(captureOutput: AVCaptureOutput!, didDropSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {
+    open func captureOutput(_ captureOutput: AVCaptureOutput!, didDrop sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
 
         delegate?.cameracaptureOutput(captureOutput, didDropSampleBuffer: sampleBuffer, fromConnection: connection)
     }
