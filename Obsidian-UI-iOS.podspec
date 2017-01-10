@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name             = "Obsidian-UI-iOS"
-  s.version          = "1.0.0"
+  s.version          = "2.0.0"
   s.summary          = "A collection of useful iOS user interface components and utilities for use in a wide range of projects."
 
   s.description      = "Obsidian UI is a collection of useful iOS user interface components and utilities for use in a wide range of projects.  For convenience, the classes have been bundled into one framework, ready to be dropped into your app."
